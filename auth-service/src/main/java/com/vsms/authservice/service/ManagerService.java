@@ -5,6 +5,7 @@ import com.vsms.authservice.dto.request.ManagerUpdateRequest;
 import com.vsms.authservice.dto.response.ManagerResponse;
 import com.vsms.authservice.entity.AppUser;
 import com.vsms.authservice.entity.Manager;
+import com.vsms.authservice.enums.Department;
 import com.vsms.authservice.enums.Role;
 import com.vsms.authservice.enums.UserStatus;
 import com.vsms.authservice.exception.DuplicateResourceException;
@@ -41,11 +42,16 @@ public class ManagerService {
         // Generate temporary password
         String tempPassword = UUID.randomUUID().toString().substring(0, 8);
 
+        // Set role based on department
+        Role role = (request.getDepartment() == Department.INVENTORY)
+                ? Role.INVENTORY_MANAGER
+                : Role.MANAGER;
+
         AppUser appUser = AppUser.builder()
                 .email(request.getEmail())
                 .passwordHash(tempPassword) // TODO: Hash and send via email
                 .phone(request.getPhone())
-                .role(Role.MANAGER)
+                .role(role)
                 .status(UserStatus.ACTIVE)
                 .mustChangePassword(true) // Must change on first login
                 .build();
@@ -76,11 +82,17 @@ public class ManagerService {
     }
 
     /**
-     * Get all managers
+     * Get all managers (optional filter by department)
      */
     @Transactional(readOnly = true)
-    public List<ManagerResponse> getAllManagers() {
-        return managerRepository.findAll().stream()
+    public List<ManagerResponse> getAllManagers(Department department) {
+        List<Manager> managers;
+        if (department != null) {
+            managers = managerRepository.findByDepartment(department);
+        } else {
+            managers = managerRepository.findAll();
+        }
+        return managers.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -103,6 +115,11 @@ public class ManagerService {
         }
         if (request.getDepartment() != null) {
             manager.setDepartment(request.getDepartment());
+            // Update role if department changed
+            Role role = (request.getDepartment() == Department.INVENTORY)
+                    ? Role.INVENTORY_MANAGER
+                    : Role.MANAGER;
+            manager.getUser().setRole(role);
         }
 
         Manager updated = managerRepository.save(manager);
@@ -117,6 +134,17 @@ public class ManagerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Manager", "id", id));
         manager.getUser().setStatus(UserStatus.INACTIVE);
         managerRepository.save(manager);
+    }
+
+    /**
+     * Get count (optional by department)
+     */
+    @Transactional(readOnly = true)
+    public long getManagerCount(Department department) {
+        if (department != null) {
+            return managerRepository.countByDepartment(department);
+        }
+        return managerRepository.count();
     }
 
     /**

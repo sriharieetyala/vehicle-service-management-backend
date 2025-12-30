@@ -4,6 +4,7 @@ import com.vsms.authservice.dto.request.ManagerCreateRequest;
 import com.vsms.authservice.dto.request.ManagerUpdateRequest;
 import com.vsms.authservice.dto.response.ApiResponse;
 import com.vsms.authservice.dto.response.ManagerResponse;
+import com.vsms.authservice.enums.Department;
 import com.vsms.authservice.service.ManagerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,9 @@ public class ManagerController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ManagerResponse>>> getAllManagers() {
-        List<ManagerResponse> managers = managerService.getAllManagers();
+    public ResponseEntity<ApiResponse<List<ManagerResponse>>> getAllManagers(
+            @RequestParam(required = false) Department department) {
+        List<ManagerResponse> managers = managerService.getAllManagers(department);
         return ResponseEntity.ok(ApiResponse.success(managers));
     }
 
@@ -53,5 +55,12 @@ public class ManagerController {
     public ResponseEntity<ApiResponse<Void>> deleteManager(@PathVariable Integer id) {
         managerService.deleteManager(id);
         return ResponseEntity.ok(ApiResponse.success("Manager deactivated", null));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<ApiResponse<Long>> getManagerCount(
+            @RequestParam(required = false) Department department) {
+        long count = managerService.getManagerCount(department);
+        return ResponseEntity.ok(ApiResponse.success(count));
     }
 }
