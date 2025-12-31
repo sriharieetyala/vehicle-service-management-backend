@@ -1,5 +1,6 @@
 package com.vsms.servicerequestservice.service;
 
+import com.vsms.servicerequestservice.client.BillingClient;
 import com.vsms.servicerequestservice.dto.request.AssignTechnicianDTO;
 import com.vsms.servicerequestservice.dto.request.ServiceNotesDTO;
 import com.vsms.servicerequestservice.dto.request.ServiceRequestCreateDTO;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 public class ServiceRequestService {
 
     private final ServiceRequestRepository repository;
+    private final BillingClient billingClient;
 
     @Value("${service.total-bays:10}")
     private int totalBays;
@@ -128,8 +130,19 @@ public class ServiceRequestService {
         }
         request.setStatus(RequestStatus.COMPLETED);
         request.setCompletedAt(LocalDateTime.now());
+        ServiceRequest savedRequest = repository.save(request);
         log.info("Request {} completed, bay {} now free", id, request.getBayNumber());
-        return mapToResponse(repository.save(request));
+
+        // Auto-generate invoice
+        try {
+            billingClient.generateInvoice(id);
+            log.info("Invoice auto-generated for service request {}", id);
+        } catch (Exception e) {
+            log.warn("Could not auto-generate invoice for request {}: {}", id, e.getMessage());
+            // Don't fail the completion if billing service is unavailable
+        }
+
+        return mapToResponse(savedRequest);
     }
 
     public ServiceRequestResponse addNotes(Integer id, ServiceNotesDTO dto) {
