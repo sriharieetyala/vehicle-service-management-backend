@@ -25,6 +25,7 @@ public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final AppUserRepository appUserRepository;
+    private final NotificationPublisher notificationPublisher;
 
     /**
      * Create a new customer
@@ -56,6 +57,16 @@ public class CustomerService {
                 .build();
 
         Customer savedCustomer = customerRepository.save(customer);
+
+        // Send welcome email
+        try {
+            notificationPublisher.publishCustomerWelcome(
+                    request.getFirstName() + " " + request.getLastName(),
+                    request.getEmail());
+        } catch (Exception e) {
+            System.err.println("Could not send notification: " + e.getMessage());
+        }
+
         return mapToResponse(savedCustomer);
     }
 

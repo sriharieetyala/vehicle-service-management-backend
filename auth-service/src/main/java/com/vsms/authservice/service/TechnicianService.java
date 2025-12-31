@@ -26,6 +26,7 @@ public class TechnicianService {
 
     private final TechnicianRepository technicianRepository;
     private final AppUserRepository appUserRepository;
+    private final NotificationPublisher notificationPublisher;
 
     /**
      * Register a new technician (status = PENDING until admin approves)
@@ -130,6 +131,17 @@ public class TechnicianService {
         technician.setEmployeeId(employeeId);
 
         Technician updated = technicianRepository.save(technician);
+
+        // Send approval email
+        try {
+            notificationPublisher.publishTechnicianApproved(
+                    technician.getFirstName() + " " + technician.getLastName(),
+                    technician.getUser().getEmail(),
+                    technician.getUser().getEmail());
+        } catch (Exception e) {
+            System.err.println("Could not send notification: " + e.getMessage());
+        }
+
         return mapToResponse(updated);
     }
 
@@ -146,6 +158,16 @@ public class TechnicianService {
 
         technician.getUser().setStatus(UserStatus.INACTIVE);
         technicianRepository.save(technician);
+
+        // Send rejection email
+        try {
+            notificationPublisher.publishTechnicianRejected(
+                    technician.getFirstName() + " " + technician.getLastName(),
+                    technician.getUser().getEmail(),
+                    null);
+        } catch (Exception e) {
+            System.err.println("Could not send notification: " + e.getMessage());
+        }
     }
 
     /**
@@ -182,11 +204,11 @@ public class TechnicianService {
     }
 
     /**
-     * Get technician count
+     * Get technician count (only ACTIVE technicians)
      */
     @Transactional(readOnly = true)
     public long getTechnicianCount() {
-        return technicianRepository.count();
+        return technicianRepository.countActive();
     }
 
     /**

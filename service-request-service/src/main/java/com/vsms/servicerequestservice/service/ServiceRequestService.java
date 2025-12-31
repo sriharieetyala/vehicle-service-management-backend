@@ -32,6 +32,7 @@ public class ServiceRequestService {
 
     private final ServiceRequestRepository repository;
     private final BillingClient billingClient;
+    private final NotificationPublisher notificationPublisher;
 
     @Value("${service.total-bays:10}")
     private int totalBays;
@@ -140,6 +141,18 @@ public class ServiceRequestService {
         } catch (Exception e) {
             log.warn("Could not auto-generate invoice for request {}: {}", id, e.getMessage());
             // Don't fail the completion if billing service is unavailable
+        }
+
+        // Send service completed notification
+        try {
+            notificationPublisher.publishServiceCompleted(
+                    "Customer", // TODO: Get from auth-service
+                    "customer@email.com", // TODO: Get from auth-service
+                    "Vehicle", // TODO: Get from vehicle-service
+                    request.getServiceType().name(),
+                    Long.valueOf(request.getId()));
+        } catch (Exception e) {
+            log.warn("Could not send notification for request {}: {}", id, e.getMessage());
         }
 
         return mapToResponse(savedRequest);

@@ -47,7 +47,9 @@ public interface TechnicianRepository extends JpaRepository<Technician, Integer>
         @Query("UPDATE Technician t SET t.currentWorkload = t.currentWorkload - 1 WHERE t.id = :id AND t.currentWorkload > 0")
         void decrementWorkload(@Param("id") Integer id);
 
-        long count();
+        // Count only ACTIVE technicians (approved and part of the team)
+        @Query("SELECT COUNT(t) FROM Technician t WHERE t.user.status = 'ACTIVE'")
+        long countActive();
 
         @Query("SELECT COUNT(t) FROM Technician t WHERE t.user.status = 'PENDING'")
         long countPending();
