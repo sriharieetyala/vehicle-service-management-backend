@@ -136,4 +136,20 @@ public class PartRequestService {
                 .processedBy(request.getProcessedBy())
                 .build();
     }
+
+    // Get total parts cost for a service request (for billing)
+    @Transactional(readOnly = true)
+    public java.math.BigDecimal getTotalCostForService(Integer serviceRequestId) {
+        List<PartRequest> approvedRequests = repository.findByServiceRequestId(serviceRequestId)
+                .stream()
+                .filter(req -> req.getStatus() == RequestStatus.APPROVED)
+                .collect(Collectors.toList());
+
+        return approvedRequests.stream()
+                .map(req -> {
+                    Part part = partService.findById(req.getPartId());
+                    return part.getUnitPrice().multiply(java.math.BigDecimal.valueOf(req.getRequestedQuantity()));
+                })
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+    }
 }
