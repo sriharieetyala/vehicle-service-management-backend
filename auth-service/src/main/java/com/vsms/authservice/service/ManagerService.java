@@ -27,6 +27,7 @@ public class ManagerService {
 
     private final ManagerRepository managerRepository;
     private final AppUserRepository appUserRepository;
+    private final NotificationPublisher notificationPublisher;
 
     /**
      * Admin creates a new manager (auto-generates password)
@@ -66,7 +67,17 @@ public class ManagerService {
 
         Manager saved = managerRepository.save(manager);
 
-        // TODO: Send email with credentials via notification service
+        // Send email with credentials via notification service
+        try {
+            notificationPublisher.publishManagerCreated(
+                    request.getFirstName() + " " + request.getLastName(),
+                    request.getEmail(),
+                    request.getEmail(), // username is email
+                    tempPassword);
+        } catch (Exception e) {
+            // Log but don't fail the creation
+            System.err.println("Could not send notification: " + e.getMessage());
+        }
 
         return mapToResponse(saved);
     }
