@@ -37,12 +37,6 @@ public class ManagerController {
         return ResponseEntity.ok(ApiResponse.success(managers));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ManagerResponse>> getManagerById(@PathVariable Integer id) {
-        ManagerResponse response = managerService.getManagerById(id);
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ManagerResponse>> updateManager(
             @PathVariable Integer id,
@@ -55,12 +49,5 @@ public class ManagerController {
     public ResponseEntity<ApiResponse<Void>> deleteManager(@PathVariable Integer id) {
         managerService.deleteManager(id);
         return ResponseEntity.ok(ApiResponse.success("Manager deactivated", null));
-    }
-
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Long>> getManagerCount(
-            @RequestParam(required = false) Department department) {
-        long count = managerService.getManagerCount(department);
-        return ResponseEntity.ok(ApiResponse.success(count));
     }
 }
