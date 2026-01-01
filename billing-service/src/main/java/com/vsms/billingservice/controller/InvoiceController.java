@@ -35,13 +35,7 @@ public class InvoiceController {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getAllInvoices()));
     }
 
-    // 3. Get invoice by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<InvoiceResponse>> getInvoiceById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ApiResponse.success(invoiceService.getInvoiceById(id)));
-    }
-
-    // 4. Get my invoices (Customer)
+    // 3. Get my invoices (Customer)
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getMyInvoices(
             @RequestParam Integer customerId) {
