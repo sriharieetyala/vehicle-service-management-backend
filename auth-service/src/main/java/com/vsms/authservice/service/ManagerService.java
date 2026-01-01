@@ -28,6 +28,7 @@ public class ManagerService {
     private final ManagerRepository managerRepository;
     private final AppUserRepository appUserRepository;
     private final NotificationPublisher notificationPublisher;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
      * Admin creates a new manager (auto-generates password)
@@ -50,7 +51,7 @@ public class ManagerService {
 
         AppUser appUser = AppUser.builder()
                 .email(request.getEmail())
-                .passwordHash(tempPassword) // TODO: Hash and send via email
+                .passwordHash(passwordEncoder.encode(tempPassword))
                 .phone(request.getPhone())
                 .role(role)
                 .status(UserStatus.ACTIVE)

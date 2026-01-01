@@ -27,6 +27,7 @@ public class TechnicianService {
     private final TechnicianRepository technicianRepository;
     private final AppUserRepository appUserRepository;
     private final NotificationPublisher notificationPublisher;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
      * Register a new technician (status = PENDING until admin approves)
@@ -38,7 +39,7 @@ public class TechnicianService {
 
         AppUser appUser = AppUser.builder()
                 .email(request.getEmail())
-                .passwordHash(request.getPassword()) // TODO: Hash when auth ready
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(Role.TECHNICIAN)
                 .status(UserStatus.PENDING) // Requires admin approval

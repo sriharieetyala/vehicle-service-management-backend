@@ -26,6 +26,7 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final AppUserRepository appUserRepository;
     private final NotificationPublisher notificationPublisher;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
      * Create a new customer
@@ -39,7 +40,7 @@ public class CustomerService {
         // Create AppUser first
         AppUser appUser = AppUser.builder()
                 .email(request.getEmail())
-                .passwordHash(request.getPassword()) // TODO: Hash password when auth service is ready
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(Role.CUSTOMER)
                 .status(UserStatus.ACTIVE)
