@@ -39,7 +39,7 @@ public class InvoiceService {
             throw new BadRequestException("Invoice already exists for service request: " + serviceRequestId);
         }
 
-        // Get service request details (labor cost, customer ID)
+        // Get service request details (finalCost is total = parts + labor)
         Map<String, Object> srResponse = serviceRequestClient.getServiceRequest(serviceRequestId);
         Map<String, Object> srData = (Map<String, Object>) srResponse.get("data");
 
@@ -48,12 +48,12 @@ public class InvoiceService {
         }
 
         Integer customerId = (Integer) srData.get("customerId");
-        BigDecimal laborCost = getBigDecimal(srData.get("finalCost"));
-        if (laborCost == null || laborCost.compareTo(BigDecimal.ZERO) == 0) {
-            laborCost = getBigDecimal(srData.get("estimatedCost"));
+        BigDecimal totalFromPricing = getBigDecimal(srData.get("finalCost"));
+        if (totalFromPricing == null || totalFromPricing.compareTo(BigDecimal.ZERO) == 0) {
+            totalFromPricing = getBigDecimal(srData.get("estimatedCost"));
         }
-        if (laborCost == null) {
-            laborCost = BigDecimal.ZERO;
+        if (totalFromPricing == null) {
+            totalFromPricing = BigDecimal.ZERO;
         }
 
         // Get parts cost from inventory service
@@ -65,11 +65,18 @@ public class InvoiceService {
             }
         } catch (Exception e) {
             log.warn("Could not fetch parts cost for service {}: {}", serviceRequestId, e.getMessage());
-            // Continue with zero parts cost if inventory service is unavailable
         }
 
-        // Calculate total
-        BigDecimal totalAmount = laborCost.add(partsCost);
+        // Labor cost = Total from pricing - Parts cost
+        // Note: finalCost in service-request already includes both parts + labor set by
+        // manager
+        BigDecimal laborCost = totalFromPricing.subtract(partsCost);
+        if (laborCost.compareTo(BigDecimal.ZERO) < 0) {
+            laborCost = BigDecimal.ZERO;
+        }
+
+        // Total amount is what manager set
+        BigDecimal totalAmount = totalFromPricing;
 
         // Generate invoice number
         String invoiceNumber = generateInvoiceNumber();
@@ -148,6 +155,15 @@ public class InvoiceService {
 
         Invoice updated = repository.save(invoice);
         log.info("Invoice {} paid via {}", invoice.getInvoiceNumber(), dto.getPaymentMethod());
+
+        // Auto-close the service request after payment
+        try {
+            serviceRequestClient.updateStatus(invoice.getServiceRequestId(),
+                    java.util.Map.of("status", "CLOSED"));
+            log.info("Service request {} closed after payment", invoice.getServiceRequestId());
+        } catch (Exception e) {
+            log.warn("Could not close service request {}: {}", invoice.getServiceRequestId(), e.getMessage());
+        }
 
         // Publish notification event
         try {
