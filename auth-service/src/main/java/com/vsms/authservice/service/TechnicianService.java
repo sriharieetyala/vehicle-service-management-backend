@@ -60,21 +60,27 @@ public class TechnicianService {
     }
 
     /**
-     * Get technician by ID
+     * Get technician by ID (only if ACTIVE or PENDING, not if rejected/INACTIVE)
      */
     @Transactional(readOnly = true)
     public TechnicianResponse getTechnicianById(Integer id) {
         Technician technician = technicianRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
+
+        // Don't expose rejected (INACTIVE) technicians
+        if (technician.getUser().getStatus() == UserStatus.INACTIVE) {
+            throw new ResourceNotFoundException("Technician", "id", id);
+        }
+
         return mapToResponse(technician);
     }
 
     /**
-     * Get all technicians
+     * Get all APPROVED technicians (ACTIVE status only)
      */
     @Transactional(readOnly = true)
     public List<TechnicianResponse> getAllTechnicians() {
-        return technicianRepository.findAll().stream()
+        return technicianRepository.findAllActive().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }

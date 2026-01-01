@@ -37,6 +37,10 @@ public interface TechnicianRepository extends JpaRepository<Technician, Integer>
         @Query("SELECT t FROM Technician t WHERE t.user.status = 'PENDING'")
         List<Technician> findPendingApproval();
 
+        // Find all ACTIVE (approved) technicians - excludes PENDING and INACTIVE
+        @Query("SELECT t FROM Technician t WHERE t.user.status = 'ACTIVE'")
+        List<Technician> findAllActive();
+
         // Increment workload
         @Modifying
         @Query("UPDATE Technician t SET t.currentWorkload = t.currentWorkload + 1 WHERE t.id = :id")
