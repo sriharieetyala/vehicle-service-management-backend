@@ -60,16 +60,19 @@ public class TechnicianController {
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    @PutMapping("/{id}/approve")
-    public ResponseEntity<ApiResponse<TechnicianResponse>> approveTechnician(@PathVariable Integer id) {
-        TechnicianResponse response = technicianService.approveTechnician(id);
-        return ResponseEntity.ok(ApiResponse.success("Technician approved successfully", response));
-    }
-
-    @PutMapping("/{id}/reject")
-    public ResponseEntity<ApiResponse<Void>> rejectTechnician(@PathVariable Integer id) {
-        technicianService.rejectTechnician(id);
-        return ResponseEntity.ok(ApiResponse.success("Technician rejected", null));
+    @PutMapping("/{id}/review")
+    public ResponseEntity<ApiResponse<TechnicianResponse>> reviewTechnician(
+            @PathVariable Integer id,
+            @RequestParam String action) {
+        if ("APPROVE".equalsIgnoreCase(action)) {
+            TechnicianResponse response = technicianService.approveTechnician(id);
+            return ResponseEntity.ok(ApiResponse.success("Technician approved", response));
+        } else if ("REJECT".equalsIgnoreCase(action)) {
+            technicianService.rejectTechnician(id);
+            return ResponseEntity.ok(ApiResponse.success("Technician rejected", null));
+        } else {
+            throw new IllegalArgumentException("Invalid action. Use APPROVE or REJECT");
+        }
     }
 
     @PutMapping("/{id}/duty")
@@ -78,27 +81,24 @@ public class TechnicianController {
         return ResponseEntity.ok(ApiResponse.success("Duty status toggled", response));
     }
 
-    @PutMapping("/{id}/workload/increment")
-    public ResponseEntity<ApiResponse<Void>> incrementWorkload(@PathVariable Integer id) {
-        technicianService.incrementWorkload(id);
-        return ResponseEntity.ok(ApiResponse.success("Workload incremented", null));
-    }
-
-    @PutMapping("/{id}/workload/decrement")
-    public ResponseEntity<ApiResponse<Void>> decrementWorkload(@PathVariable Integer id) {
-        technicianService.decrementWorkload(id);
-        return ResponseEntity.ok(ApiResponse.success("Workload decremented", null));
+    @PutMapping("/{id}/workload")
+    public ResponseEntity<ApiResponse<Void>> updateWorkload(
+            @PathVariable Integer id,
+            @RequestParam String action) {
+        if ("INCREMENT".equalsIgnoreCase(action)) {
+            technicianService.incrementWorkload(id);
+            return ResponseEntity.ok(ApiResponse.success("Workload incremented", null));
+        } else if ("DECREMENT".equalsIgnoreCase(action)) {
+            technicianService.decrementWorkload(id);
+            return ResponseEntity.ok(ApiResponse.success("Workload decremented", null));
+        } else {
+            throw new IllegalArgumentException("Invalid action. Use INCREMENT or DECREMENT");
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTechnician(@PathVariable Integer id) {
         technicianService.deleteTechnician(id);
         return ResponseEntity.ok(ApiResponse.success("Technician deactivated", null));
-    }
-
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Long>> getTechnicianCount() {
-        long count = technicianService.getTechnicianCount();
-        return ResponseEntity.ok(ApiResponse.success(count));
     }
 }
