@@ -34,7 +34,7 @@ public class PartRequestController {
                 return ResponseEntity.ok(ApiResponse.success(partRequestService.getPendingRequests()));
         }
 
-        // 8. Approve request (reduces stock)
+        // 7. Approve request (reduces stock)
         @PutMapping("/{id}/approve")
         public ResponseEntity<ApiResponse<PartRequestResponse>> approveRequest(
                         @PathVariable Integer id,
@@ -44,7 +44,7 @@ public class PartRequestController {
                                                 partRequestService.approveRequest(id, approvedBy)));
         }
 
-        // 9. Reject request
+        // 8. Reject request
         @PutMapping("/{id}/reject")
         public ResponseEntity<ApiResponse<PartRequestResponse>> rejectRequest(
                         @PathVariable Integer id,

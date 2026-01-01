@@ -15,6 +15,4 @@ public class AssignTechnicianDTO {
 
     @NotNull(message = "Bay number is required")
     private Integer bayNumber;
-
-    private Float estimatedCost;
 }

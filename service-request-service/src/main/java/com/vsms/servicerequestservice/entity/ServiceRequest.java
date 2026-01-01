@@ -33,7 +33,7 @@ public class ServiceRequest {
     private Integer technicianId;
 
     @Column(name = "bay_number")
-    private Integer bayNumber; // Service bay assigned (1 to totalBays)
+    private Integer bayNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "service_type", nullable = false)
@@ -50,17 +50,15 @@ public class ServiceRequest {
     @Column(nullable = false)
     private RequestStatus status;
 
-    @Column(name = "service_notes", columnDefinition = "TEXT")
-    private String serviceNotes;
+    @Column(name = "pickup_required")
+    @Builder.Default
+    private Boolean pickupRequired = false;
 
-    @Column(name = "estimated_cost")
-    private Float estimatedCost;
+    @Column(name = "pickup_address", length = 500)
+    private String pickupAddress;
 
     @Column(name = "final_cost")
     private Float finalCost;
-
-    @Column(name = "scheduled_date")
-    private LocalDateTime scheduledDate;
 
     @Column(name = "started_at")
     private LocalDateTime startedAt;

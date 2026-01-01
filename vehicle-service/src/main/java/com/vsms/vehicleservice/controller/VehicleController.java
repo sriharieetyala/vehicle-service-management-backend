@@ -55,10 +55,4 @@ public class VehicleController {
         vehicleService.deleteVehicle(id);
         return ResponseEntity.ok(ApiResponse.success("Vehicle deleted successfully", null));
     }
-
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Long>> getVehicleCount() {
-        long count = vehicleService.getVehicleCount();
-        return ResponseEntity.ok(ApiResponse.success(count));
-    }
 }

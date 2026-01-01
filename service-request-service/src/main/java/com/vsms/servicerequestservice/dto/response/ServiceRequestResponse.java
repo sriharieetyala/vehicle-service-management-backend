@@ -22,10 +22,9 @@ public class ServiceRequestResponse {
     private String description;
     private Priority priority;
     private RequestStatus status;
-    private String serviceNotes;
-    private Float estimatedCost;
+    private Boolean pickupRequired;
+    private String pickupAddress;
     private Float finalCost;
-    private LocalDateTime scheduledDate;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
     private LocalDateTime createdAt;

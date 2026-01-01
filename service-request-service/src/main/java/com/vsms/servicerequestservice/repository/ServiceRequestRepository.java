@@ -14,6 +14,8 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
 
     List<ServiceRequest> findByCustomerId(Integer customerId);
 
+    List<ServiceRequest> findByVehicleId(Integer vehicleId);
+
     List<ServiceRequest> findByTechnicianId(Integer technicianId);
 
     List<ServiceRequest> findByStatus(RequestStatus status);

@@ -1,5 +1,6 @@
 package com.vsms.vehicleservice.service;
 
+import com.vsms.vehicleservice.client.AuthServiceClient;
 import com.vsms.vehicleservice.dto.request.VehicleCreateRequest;
 import com.vsms.vehicleservice.dto.request.VehicleUpdateRequest;
 import com.vsms.vehicleservice.dto.response.VehicleResponse;
@@ -8,6 +9,7 @@ import com.vsms.vehicleservice.exception.DuplicateResourceException;
 import com.vsms.vehicleservice.exception.ResourceNotFoundException;
 import com.vsms.vehicleservice.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,14 +19,24 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final AuthServiceClient authServiceClient;
 
     /**
      * Register a new vehicle for a customer
      */
     public VehicleResponse createVehicle(VehicleCreateRequest request) {
+        // Validate customer exists in auth-service
+        try {
+            authServiceClient.getCustomerById(request.getCustomerId());
+        } catch (Exception e) {
+            log.error("Customer validation failed: {}", e.getMessage());
+            throw new ResourceNotFoundException("Customer", "id", request.getCustomerId());
+        }
+
         if (vehicleRepository.existsByPlateNumber(request.getPlateNumber())) {
             throw new DuplicateResourceException("Vehicle", "plateNumber", request.getPlateNumber());
         }
@@ -39,6 +51,7 @@ public class VehicleService {
                 .build();
 
         Vehicle saved = vehicleRepository.save(vehicle);
+        log.info("Vehicle registered for customer {}: {}", request.getCustomerId(), saved.getPlateNumber());
         return mapToResponse(saved);
     }
 
