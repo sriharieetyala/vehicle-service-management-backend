@@ -37,21 +37,7 @@ public class PartController {
         return ResponseEntity.ok(ApiResponse.success(partService.getAllParts(category)));
     }
 
-    // 3. Get part by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PartResponse>> getPartById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ApiResponse.success(partService.getPartById(id)));
-    }
-
-    // 4. Update part
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PartResponse>> updatePart(
-            @PathVariable Integer id,
-            @Valid @RequestBody PartUpdateDTO dto) {
-        return ResponseEntity.ok(ApiResponse.success("Part updated successfully", partService.updatePart(id, dto)));
-    }
-
-    // 5. Get low stock parts
+    // 3. Get low stock parts
     @GetMapping("/low-stock")
     public ResponseEntity<ApiResponse<List<PartResponse>>> getLowStockParts() {
         return ResponseEntity.ok(ApiResponse.success(partService.getLowStockParts()));
