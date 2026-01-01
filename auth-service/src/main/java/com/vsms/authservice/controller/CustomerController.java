@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
+    // Public - Customer registration
     @PostMapping
     public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(
             @Valid @RequestBody CustomerCreateRequest request) {
@@ -29,18 +31,24 @@ public class CustomerController {
                 HttpStatus.CREATED);
     }
 
+    // Manager/Admin can view all customers
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers() {
         List<CustomerResponse> customers = customerService.getAllCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers));
     }
 
+    // Customer can view own, Manager/Admin can view any
+    @PreAuthorize("#id == authentication.principal.id or hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable Integer id) {
         CustomerResponse response = customerService.getCustomerById(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // Customer can update own profile
+    @PreAuthorize("#id == authentication.principal.id")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
             @PathVariable Integer id,
@@ -49,6 +57,8 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.success("Customer updated successfully", response));
     }
 
+    // Customer can delete own account, or Admin
+    @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable Integer id) {
         customerService.deleteCustomer(id);
