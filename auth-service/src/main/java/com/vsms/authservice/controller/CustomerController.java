@@ -54,10 +54,4 @@ public class CustomerController {
         customerService.deleteCustomer(id);
         return ResponseEntity.ok(ApiResponse.success("Customer deactivated successfully", null));
     }
-
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Long>> getCustomerCount() {
-        long count = customerService.getCustomerCount();
-        return ResponseEntity.ok(ApiResponse.success(count));
-    }
 }
