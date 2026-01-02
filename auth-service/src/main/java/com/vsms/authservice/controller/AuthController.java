@@ -20,18 +20,16 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // 1. Login - Returns access + refresh tokens
+    // 1. Login - Returns access + refresh tokens directly
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(ApiResponse.success("Login successful", response));
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     // 2. Refresh token - Get new access token
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshRequest request) {
-        AuthResponse response = authService.refresh(request.getRefreshToken());
-        return ResponseEntity.ok(ApiResponse.success("Token refreshed", response));
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request.getRefreshToken()));
     }
 
     // 3. Get current user info
@@ -47,7 +45,7 @@ public class AuthController {
     // 4. Logout (client should discard token)
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
-        // JWT tokens are stateless, so we just return success
+
         // Client should remove the token from storage
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
     }

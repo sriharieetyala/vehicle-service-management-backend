@@ -3,6 +3,7 @@ package com.vsms.authservice.controller;
 import com.vsms.authservice.dto.request.CustomerCreateRequest;
 import com.vsms.authservice.dto.request.CustomerUpdateRequest;
 import com.vsms.authservice.dto.response.ApiResponse;
+import com.vsms.authservice.dto.response.CreatedResponse;
 import com.vsms.authservice.dto.response.CustomerResponse;
 import com.vsms.authservice.service.CustomerService;
 import jakarta.validation.Valid;
@@ -21,13 +22,13 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    // Public - Customer registration
+    // Public - Customer registration - returns just ID
     @PostMapping
-    public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(
+    public ResponseEntity<CreatedResponse> createCustomer(
             @Valid @RequestBody CustomerCreateRequest request) {
         CustomerResponse response = customerService.createCustomer(request);
         return new ResponseEntity<>(
-                ApiResponse.success("Customer created successfully", response),
+                CreatedResponse.builder().id(response.getId()).build(),
                 HttpStatus.CREATED);
     }
 
@@ -60,8 +61,8 @@ public class CustomerController {
     // Customer can delete own account, or Admin
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Integer id) {
         customerService.deleteCustomer(id);
-        return ResponseEntity.ok(ApiResponse.success("Customer deactivated successfully", null));
+        return ResponseEntity.ok().build();
     }
 }

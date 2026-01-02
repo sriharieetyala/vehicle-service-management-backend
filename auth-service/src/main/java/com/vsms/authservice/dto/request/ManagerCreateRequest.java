@@ -36,5 +36,9 @@ public class ManagerCreateRequest {
     @Size(max = 50, message = "Employee ID cannot exceed 50 characters")
     private String employeeId;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+
     private Department department; // Enum: SERVICE_BAY, PARTS, BILLING, CUSTOMER_SERVICE
 }

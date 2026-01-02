@@ -31,7 +31,7 @@ public class ManagerService {
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
-     * Admin creates a new manager (auto-generates password)
+     * Admin creates a new manager (password provided by admin)
      */
     public ManagerResponse createManager(ManagerCreateRequest request) {
         if (appUserRepository.existsByEmail(request.getEmail())) {
@@ -41,9 +41,6 @@ public class ManagerService {
             throw new DuplicateResourceException("Manager", "employeeId", request.getEmployeeId());
         }
 
-        // Generate temporary password
-        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-
         // Set role based on department
         Role role = (request.getDepartment() == Department.INVENTORY)
                 ? Role.INVENTORY_MANAGER
@@ -51,11 +48,10 @@ public class ManagerService {
 
         AppUser appUser = AppUser.builder()
                 .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(tempPassword))
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(role)
                 .status(UserStatus.ACTIVE)
-                .mustChangePassword(true) // Must change on first login
                 .build();
 
         Manager manager = Manager.builder()
@@ -68,15 +64,14 @@ public class ManagerService {
 
         Manager saved = managerRepository.save(manager);
 
-        // Send email with credentials via notification service
+        // Send email with credentials
         try {
             notificationPublisher.publishManagerCreated(
                     request.getFirstName() + " " + request.getLastName(),
                     request.getEmail(),
-                    request.getEmail(), // username is email
-                    tempPassword);
+                    request.getEmail(),
+                    request.getPassword());
         } catch (Exception e) {
-            // Log but don't fail the creation
             System.err.println("Could not send notification: " + e.getMessage());
         }
 

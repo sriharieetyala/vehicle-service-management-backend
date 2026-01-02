@@ -4,77 +4,90 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="51b98c40-b286-49a9-8458-efcf3c205dba" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/StatusUpdateDTO.java" afterDir="false" />
+    <list default="true" id="b005b2fa-499a-4867-8170-fa457a3028a1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application-docker.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application-docker.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/CustomerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/CustomerController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/ManagerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/ManagerController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/TechnicianController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/controller/TechnicianController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/dto/request/ManagerCreateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/dto/request/ManagerCreateRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/service/ManagerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/service/ManagerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/BillingServiceApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/client/InventoryClient.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/client/ServiceRequestClient.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/config/FeignConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/config/RabbitMQConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/controller/InvoiceController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/dto/event/InvoiceGeneratedEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/dto/event/InvoicePaidEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/dto/request/PaymentDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/dto/response/ApiResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/dto/response/InvoiceResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/dto/response/RevenueStats.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/entity/Invoice.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/enums/InvoiceStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/enums/PaymentMethod.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/exception/BadRequestException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/exception/GlobalExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/exception/ResourceNotFoundException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/repository/InvoiceRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/security/CustomUserPrincipal.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/security/JwtAuthenticationFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/security/JwtTokenProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/security/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/service/InvoiceService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/java/com/vsms/billingservice/service/NotificationPublisher.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/resources/application-docker.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/billing-service/src/test/java/com/vsms/billingservice/BillingServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/init-db.sh" beforeDir="false" afterPath="$PROJECT_DIR$/init-db.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartController.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartRequestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartRequestController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notification-service/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/notification-service/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notification-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/notification-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/security/CustomUserPrincipal.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/security/JwtAuthenticationFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/security/JwtTokenProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/client/BillingClient.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/controller/ServiceRequestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/controller/ServiceRequestController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/AssignTechnicianDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/AssignTechnicianDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/ServiceNotesDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/ServiceRequestCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/ServiceRequestCreateDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/response/ServiceRequestResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/response/ServiceRequestResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/entity/ServiceRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/entity/ServiceRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/enums/RequestStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/enums/RequestStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/repository/ServiceRequestRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/repository/ServiceRequestRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/security/CustomUserPrincipal.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/security/JwtAuthenticationFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/security/JwtTokenProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/NotificationPublisher.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/NotificationPublisher.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/ServiceRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/ServiceRequestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vehicle-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/controller/VehicleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/controller/VehicleController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/service/VehicleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/service/VehicleService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/security/CustomUserPrincipal.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/security/JwtAuthenticationFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/security/JwtTokenProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="KubernetesApiPersistence">{}</component>
-  <component name="KubernetesApiProvider">{
-  &quot;isMigrated&quot;: true
-}</component>
-  <component name="ProjectColorInfo">{
-  &quot;customColor&quot;: &quot;&quot;,
-  &quot;associatedIndex&quot;: 0
-}</component>
-  <component name="ProjectId" id="37b2uHi50tHZpXLgXRyURtle3NI" />
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;New/updated database configurations found&quot;,
-    &quot;Notification.DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.ApiGatewayApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.AuthServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.BillingServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.InventoryServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.NotificationServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.ServiceRegistryApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.ServiceRequestServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.VehicleServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Chubb-Capstone/Backend&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
-  }
-}</component>
+  <component name="PropertiesComponent">{}</component>
   <component name="RunDashboard">
     <option name="configurationTypes">
       <set>
@@ -84,26 +97,8 @@
         <option value="SpringBootApplicationConfigurationType" />
       </set>
     </option>
-    <option name="configurationStatuses">
-      <map>
-        <entry key="SpringBootApplicationConfigurationType">
-          <value>
-            <map>
-              <entry key="ApiGatewayApplication" value="STOPPED" />
-              <entry key="AuthServiceApplication" value="STOPPED" />
-              <entry key="BillingServiceApplication" value="STOPPED" />
-              <entry key="InventoryServiceApplication" value="STOPPED" />
-              <entry key="NotificationServiceApplication" value="STOPPED" />
-              <entry key="ServiceRegistryApplication" value="STOPPED" />
-              <entry key="ServiceRequestServiceApplication" value="STOPPED" />
-              <entry key="VehicleServiceApplication" value="STOPPED" />
-            </map>
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.ApiGatewayApplication">
+  <component name="RunManager" selected="Spring Boot.ServiceRegistryApplication">
     <configuration name="ApiGatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="api-gateway" />
@@ -112,24 +107,10 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="AuthServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+    <configuration name="AuthServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="auth-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.vsms.authservice.AuthServiceApplication" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.vsms.authservice.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="BillingServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="billing-service" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.vsms.billingservice.BillingServiceApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -142,15 +123,9 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="NotificationServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+    <configuration name="NotificationServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="notification-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.vsms.notificationservice.NotificationServiceApplication" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.vsms.notificationservice.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -178,12 +153,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Spring Boot.NotificationServiceApplication" />
-        <item itemvalue="Spring Boot.AuthServiceApplication" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -195,15 +164,12 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="51b98c40-b286-49a9-8458-efcf3c205dba" name="Changes" comment="" />
-      <created>1767157670744</created>
+      <changelist id="b005b2fa-499a-4867-8170-fa457a3028a1" name="Changes" comment="" />
+      <created>1767334411685</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1767157670744</updated>
-      <workItem from="1767157672111" duration="9642000" />
-      <workItem from="1767183766544" duration="1426000" />
-      <workItem from="1767185234194" duration="8445000" />
-      <workItem from="1767241779704" duration="8759000" />
+      <updated>1767334411685</updated>
+      <workItem from="1767334413393" duration="1051000" />
     </task>
     <servers />
   </component>

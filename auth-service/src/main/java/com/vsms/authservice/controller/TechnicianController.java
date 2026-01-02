@@ -2,6 +2,7 @@ package com.vsms.authservice.controller;
 
 import com.vsms.authservice.dto.request.TechnicianCreateRequest;
 import com.vsms.authservice.dto.response.ApiResponse;
+import com.vsms.authservice.dto.response.CreatedResponse;
 import com.vsms.authservice.dto.response.TechnicianResponse;
 import com.vsms.authservice.enums.Specialization;
 import com.vsms.authservice.service.TechnicianService;
@@ -21,13 +22,13 @@ public class TechnicianController {
 
     private final TechnicianService technicianService;
 
-    // Public - Technician registration
+    // Public - Technician registration - returns just ID
     @PostMapping
-    public ResponseEntity<ApiResponse<TechnicianResponse>> createTechnician(
+    public ResponseEntity<CreatedResponse> createTechnician(
             @Valid @RequestBody TechnicianCreateRequest request) {
         TechnicianResponse response = technicianService.createTechnician(request);
         return new ResponseEntity<>(
-                ApiResponse.success("Technician registration submitted, awaiting approval", response),
+                CreatedResponse.builder().id(response.getId()).build(),
                 HttpStatus.CREATED);
     }
 
@@ -116,8 +117,8 @@ public class TechnicianController {
     // Technician can delete own account, or Admin
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteTechnician(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteTechnician(@PathVariable Integer id) {
         technicianService.deleteTechnician(id);
-        return ResponseEntity.ok(ApiResponse.success("Technician deactivated", null));
+        return ResponseEntity.ok().build();
     }
 }

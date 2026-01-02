@@ -98,16 +98,6 @@ services:
     networks:
       - vsms-network
 
-  billing-service:
-    build: ./billing-service
-    container_name: vsms-billing-service
-    ports:
-      - "8085:8085"
-    depends_on:
-      - service-registry
-    networks:
-      - vsms-network
-
   notification-service:
     build: ./notification-service
     container_name: vsms-notification-service

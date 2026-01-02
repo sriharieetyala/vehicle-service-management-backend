@@ -1,7 +1,6 @@
 package com.vsms.servicerequestservice.service;
 
 import com.vsms.servicerequestservice.client.AuthServiceClient;
-import com.vsms.servicerequestservice.client.BillingClient;
 import com.vsms.servicerequestservice.client.InventoryClient;
 import com.vsms.servicerequestservice.client.VehicleClient;
 import com.vsms.servicerequestservice.dto.request.AssignTechnicianDTO;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
 public class ServiceRequestService {
 
     private final ServiceRequestRepository repository;
-    private final BillingClient billingClient;
+    private final InvoiceService invoiceService;
     private final VehicleClient vehicleClient;
     private final InventoryClient inventoryClient;
     private final AuthServiceClient authServiceClient;
@@ -237,7 +236,7 @@ public class ServiceRequestService {
 
         // Auto-generate invoice after pricing is set
         try {
-            billingClient.generateInvoice(id);
+            invoiceService.generateInvoice(id);
             log.info("Invoice auto-generated for service request {}", id);
         } catch (Exception e) {
             log.warn("Could not auto-generate invoice for request {}: {}", id, e.getMessage());

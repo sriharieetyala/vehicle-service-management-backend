@@ -3,6 +3,7 @@ package com.vsms.authservice.controller;
 import com.vsms.authservice.dto.request.ManagerCreateRequest;
 import com.vsms.authservice.dto.request.ManagerUpdateRequest;
 import com.vsms.authservice.dto.response.ApiResponse;
+import com.vsms.authservice.dto.response.CreatedResponse;
 import com.vsms.authservice.dto.response.ManagerResponse;
 import com.vsms.authservice.enums.Department;
 import com.vsms.authservice.service.ManagerService;
@@ -22,14 +23,14 @@ public class ManagerController {
 
     private final ManagerService managerService;
 
-    // Only Admin can create managers
+    // Only Admin can create managers - returns just ID
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse<ManagerResponse>> createManager(
+    public ResponseEntity<CreatedResponse> createManager(
             @Valid @RequestBody ManagerCreateRequest request) {
         ManagerResponse response = managerService.createManager(request);
         return new ResponseEntity<>(
-                ApiResponse.success("Manager created successfully. Credentials sent to email.", response),
+                CreatedResponse.builder().id(response.getId()).build(),
                 HttpStatus.CREATED);
     }
 
@@ -55,8 +56,8 @@ public class ManagerController {
     // Only Admin can delete managers
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteManager(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteManager(@PathVariable Integer id) {
         managerService.deleteManager(id);
-        return ResponseEntity.ok(ApiResponse.success("Manager deactivated", null));
+        return ResponseEntity.ok().build();
     }
 }

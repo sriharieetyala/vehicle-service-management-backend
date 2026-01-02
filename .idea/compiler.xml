@@ -10,7 +10,7 @@
         <module name="api-gateway" />
         <module name="service-registry" />
       </profile>
-      <profile name="Annotation profile for notification-service" enabled="true">
+      <profile name="Annotation profile for service-request-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -18,20 +18,10 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
         </processorPath>
         <module name="service-request-service" />
-        <module name="inventory-service" />
-        <module name="notification-service" />
-        <module name="billing-service" />
-      </profile>
-      <profile name="Annotation profile for vehicle-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
-        </processorPath>
-        <module name="vehicle-service" />
         <module name="auth-service" />
+        <module name="inventory-service" />
+        <module name="vehicle-service" />
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -39,7 +29,6 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="auth-service" options="-parameters" />
-      <module name="billing-service" options="-parameters" />
       <module name="inventory-service" options="-parameters" />
       <module name="notification-service" options="-parameters" />
       <module name="service-registry" options="-parameters" />
