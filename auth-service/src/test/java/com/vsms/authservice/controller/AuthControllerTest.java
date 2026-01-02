@@ -1,8 +1,10 @@
 package com.vsms.authservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vsms.authservice.dto.request.ChangePasswordRequest;
 import com.vsms.authservice.dto.request.LoginRequest;
 import com.vsms.authservice.dto.response.AuthResponse;
+import com.vsms.authservice.security.CustomUserPrincipal;
 import com.vsms.authservice.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,5 +65,33 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Logout successful"));
+    }
+
+    @Test
+    void getCurrentUser_Success() throws Exception {
+        CustomUserPrincipal principal = new CustomUserPrincipal(1, "test@test.com", "CUSTOMER");
+
+        AuthController controller = new AuthController(authService);
+        var response = controller.getCurrentUser(principal);
+
+        assert response.getStatusCode().is2xxSuccessful();
+        assert response.getBody() != null;
+        assert response.getBody().isSuccess();
+    }
+
+    @Test
+    void changePassword_Success() throws Exception {
+        CustomUserPrincipal principal = new CustomUserPrincipal(1, "test@test.com", "CUSTOMER");
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setCurrentPassword("oldPass123");
+        request.setNewPassword("newPass123");
+
+        doNothing().when(authService).changePassword(any(CustomUserPrincipal.class), any(ChangePasswordRequest.class));
+
+        AuthController controller = new AuthController(authService);
+        var response = controller.changePassword(principal, request);
+
+        assert response.getStatusCode().is2xxSuccessful();
+        verify(authService, times(1)).changePassword(any(CustomUserPrincipal.class), any(ChangePasswordRequest.class));
     }
 }

@@ -22,8 +22,8 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
+    // Create vehicle (role check at gateway)
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CreatedResponse> createVehicle(
             @Valid @RequestBody VehicleCreateRequest request) {
         VehicleResponse response = vehicleService.createVehicle(request);
@@ -32,23 +32,26 @@ public class VehicleController {
                 HttpStatus.CREATED);
     }
 
+    // Get vehicle by ID - ownership check: customer can only see their own
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN') or @vehicleService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<ApiResponse<VehicleResponse>> getVehicleById(@PathVariable Integer id) {
         VehicleResponse response = vehicleService.getVehicleById(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // Get vehicles by customer - ownership check
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN') or #customerId == authentication.principal.id")
     public ResponseEntity<ApiResponse<List<VehicleResponse>>> getVehiclesByCustomerId(
             @PathVariable Integer customerId) {
         List<VehicleResponse> vehicles = vehicleService.getVehiclesByCustomerId(customerId);
         return ResponseEntity.ok(ApiResponse.success(vehicles));
     }
 
+    // Update vehicle - ownership check
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("@vehicleService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<ApiResponse<VehicleResponse>> updateVehicle(
             @PathVariable Integer id,
             @Valid @RequestBody VehicleUpdateRequest request) {
@@ -56,8 +59,9 @@ public class VehicleController {
         return ResponseEntity.ok(ApiResponse.success("Vehicle updated successfully", response));
     }
 
+    // Delete vehicle - ownership check
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("@vehicleService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<Void> deleteVehicle(@PathVariable Integer id) {
         vehicleService.deleteVehicle(id);
         return ResponseEntity.ok().build();

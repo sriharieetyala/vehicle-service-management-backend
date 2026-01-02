@@ -6,10 +6,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Map;
 
-@FeignClient(name = "vehicle-service")
+/**
+ * Feign client for Vehicle Service
+ * Circuit breaker enabled via
+ * spring.cloud.openfeign.circuitbreaker.enabled=true
+ */
+@FeignClient(name = "vehicle-service", fallback = VehicleClientFallback.class)
 public interface VehicleClient {
 
-    // Get vehicle by ID to validate it exists and get its customerId
     @GetMapping("/api/vehicles/{id}")
     Map<String, Object> getVehicleById(@PathVariable Integer id);
 }

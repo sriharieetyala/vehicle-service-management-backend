@@ -29,11 +29,10 @@ public class VehicleService {
      * Register a new vehicle for a customer
      */
     public VehicleResponse createVehicle(VehicleCreateRequest request) {
-        // Validate customer exists in auth-service
-        try {
-            authServiceClient.getCustomerById(request.getCustomerId());
-        } catch (Exception e) {
-            log.error("Customer validation failed: {}", e.getMessage());
+        // Validate customer exists in auth-service (circuit breaker will throw 503 if
+        // down)
+        var customerResponse = authServiceClient.getCustomerById(request.getCustomerId());
+        if (customerResponse == null) {
             throw new ResourceNotFoundException("Customer", "id", request.getCustomerId());
         }
 
@@ -116,6 +115,16 @@ public class VehicleService {
     @Transactional(readOnly = true)
     public long getVehicleCount() {
         return vehicleRepository.count();
+    }
+
+    /**
+     * Check if a customer owns a vehicle (for @PreAuthorize ownership checks)
+     */
+    @Transactional(readOnly = true)
+    public boolean isOwner(Integer vehicleId, Integer customerId) {
+        return vehicleRepository.findById(vehicleId)
+                .map(v -> v.getCustomerId().equals(customerId))
+                .orElse(false);
     }
 
     /**

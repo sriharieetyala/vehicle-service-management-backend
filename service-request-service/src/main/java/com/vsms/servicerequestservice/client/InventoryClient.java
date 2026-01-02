@@ -6,10 +6,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Map;
 
-@FeignClient(name = "inventory-service")
+/**
+ * Feign client for Inventory Service
+ * Circuit breaker enabled via
+ * spring.cloud.openfeign.circuitbreaker.enabled=true
+ */
+@FeignClient(name = "inventory-service", fallback = InventoryClientFallback.class)
 public interface InventoryClient {
 
-    // Get total parts cost for a service request
     @GetMapping("/api/part-requests/service/{serviceRequestId}/total-cost")
     Map<String, Object> getPartsCostForService(@PathVariable Integer serviceRequestId);
 }

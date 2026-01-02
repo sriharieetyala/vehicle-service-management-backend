@@ -22,8 +22,8 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
 
+    // Generate invoice (role check done at gateway)
     @PostMapping("/generate/{serviceRequestId}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<InvoiceCreatedResponse> generateInvoice(
             @PathVariable Integer serviceRequestId) {
         InvoiceResponse response = invoiceService.generateInvoice(serviceRequestId);
@@ -32,27 +32,29 @@ public class InvoiceController {
                 HttpStatus.CREATED);
     }
 
+    // Get all invoices (role check done at gateway)
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getAllInvoices() {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getAllInvoices()));
     }
 
+    // Get my invoices - ownership check: customer can only see their own
     @GetMapping("/my")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("#customerId == authentication.principal.id")
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getMyInvoices(
             @RequestParam Integer customerId) {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getMyInvoices(customerId)));
     }
 
+    // Get unpaid invoices (role check done at gateway)
     @GetMapping("/unpaid")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getUnpaidInvoices() {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getUnpaidInvoices()));
     }
 
+    // Pay invoice - ownership check: customer can only pay their own
     @PutMapping("/{id}/pay")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("@invoiceService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<ApiResponse<InvoiceResponse>> payInvoice(
             @PathVariable Integer id,
             @Valid @RequestBody PaymentDTO dto) {
@@ -60,8 +62,8 @@ public class InvoiceController {
                 ApiResponse.success("Payment successful", invoiceService.payInvoice(id, dto)));
     }
 
+    // Get revenue stats (role check done at gateway)
     @GetMapping("/stats")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<RevenueStats>> getRevenueStats() {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getRevenueStats()));
     }

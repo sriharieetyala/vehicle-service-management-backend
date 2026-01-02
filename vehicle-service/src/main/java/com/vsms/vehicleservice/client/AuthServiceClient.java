@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * Feign client to communicate with Auth Service
- * "auth-service" is the name registered in Eureka
+ * Circuit breaker enabled via spring.cloud.openfeign.circuitbreaker.enabled=true
  */
-@FeignClient(name = "auth-service")
+@FeignClient(name = "auth-service", fallback = AuthServiceClientFallback.class)
 public interface AuthServiceClient {
 
     @GetMapping("/api/customers/{id}")

@@ -9,7 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,9 +20,8 @@ public class PartRequestController {
 
         private final PartRequestService partRequestService;
 
-        // 6. Request parts for job (Technician only) - returns just ID
+        // Request parts for job (role check done at gateway)
         @PostMapping
-        @PreAuthorize("hasRole('TECHNICIAN')")
         public ResponseEntity<CreatedResponse> createRequest(
                         @Valid @RequestBody PartRequestCreateDTO dto) {
                 PartRequestResponse response = partRequestService.createRequest(dto);
@@ -32,16 +30,14 @@ public class PartRequestController {
                                 HttpStatus.CREATED);
         }
 
-        // 7. Get pending requests (Manager, Inventory Manager)
+        // Get pending requests (role check done at gateway)
         @GetMapping("/pending")
-        @PreAuthorize("hasAnyRole('MANAGER', 'INVENTORY_MANAGER', 'ADMIN')")
         public ResponseEntity<ApiResponse<List<PartRequestResponse>>> getPendingRequests() {
                 return ResponseEntity.ok(ApiResponse.success(partRequestService.getPendingRequests()));
         }
 
-        // 7. Approve request (Manager, Inventory Manager)
+        // Approve request (role check done at gateway)
         @PutMapping("/{id}/approve")
-        @PreAuthorize("hasAnyRole('MANAGER', 'INVENTORY_MANAGER', 'ADMIN')")
         public ResponseEntity<ApiResponse<PartRequestResponse>> approveRequest(
                         @PathVariable Integer id,
                         @RequestParam(required = false) Integer approvedBy) {
@@ -50,9 +46,8 @@ public class PartRequestController {
                                                 partRequestService.approveRequest(id, approvedBy)));
         }
 
-        // 8. Reject request (Manager, Inventory Manager)
+        // Reject request (role check done at gateway)
         @PutMapping("/{id}/reject")
-        @PreAuthorize("hasAnyRole('MANAGER', 'INVENTORY_MANAGER', 'ADMIN')")
         public ResponseEntity<ApiResponse<PartRequestResponse>> rejectRequest(
                         @PathVariable Integer id,
                         @RequestParam(required = false) Integer rejectedBy,
@@ -62,9 +57,8 @@ public class PartRequestController {
                                                 partRequestService.rejectRequest(id, rejectedBy, reason)));
         }
 
-        // 10. Get total parts cost (Manager)
+        // Get total parts cost (role check done at gateway)
         @GetMapping("/service/{serviceRequestId}/total-cost")
-        @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
         public ResponseEntity<ApiResponse<java.math.BigDecimal>> getTotalCostForService(
                         @PathVariable Integer serviceRequestId) {
                 return ResponseEntity.ok(

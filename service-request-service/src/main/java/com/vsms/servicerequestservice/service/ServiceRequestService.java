@@ -59,7 +59,8 @@ public class ServiceRequestService {
             if (!dto.getCustomerId().equals(vehicleCustomerId)) {
                 throw new BadRequestException("Vehicle does not belong to this customer");
             }
-        } catch (ResourceNotFoundException | BadRequestException e) {
+        } catch (ResourceNotFoundException | BadRequestException
+                | com.vsms.servicerequestservice.exception.ServiceUnavailableException e) {
             throw e;
         } catch (Exception e) {
             log.error("Vehicle validation failed: {}", e.getMessage());
@@ -384,5 +385,16 @@ public class ServiceRequestService {
                 .completedAt(request.getCompletedAt())
                 .createdAt(request.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * Check if a customer owns a service request (for @PreAuthorize ownership
+     * checks)
+     */
+    @Transactional(readOnly = true)
+    public boolean isOwner(Integer serviceRequestId, Integer customerId) {
+        return repository.findById(serviceRequestId)
+                .map(sr -> sr.getCustomerId().equals(customerId))
+                .orElse(false);
     }
 }

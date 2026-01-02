@@ -127,7 +127,7 @@ public class TechnicianService {
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
 
         if (technician.getUser().getStatus() != UserStatus.PENDING) {
-            throw new BadRequestException("Technician is not pending approval");
+            throw new BadRequestException("Technician has already been reviewed");
         }
 
         technician.getUser().setStatus(UserStatus.ACTIVE);
@@ -160,7 +160,7 @@ public class TechnicianService {
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
 
         if (technician.getUser().getStatus() != UserStatus.PENDING) {
-            throw new BadRequestException("Technician is not pending approval");
+            throw new BadRequestException("Technician has already been reviewed");
         }
 
         technician.getUser().setStatus(UserStatus.INACTIVE);

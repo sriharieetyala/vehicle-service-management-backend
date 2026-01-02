@@ -40,6 +40,12 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 		
+		<!-- Config Client for centralized configuration -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		
 		<!-- OpenFeign for inter-service communication -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>

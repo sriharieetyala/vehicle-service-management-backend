@@ -32,15 +32,14 @@ public class CustomerController {
                 HttpStatus.CREATED);
     }
 
-    // Manager/Admin can view all customers
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    // Get all customers (role check done at gateway)
     @GetMapping
     public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers() {
         List<CustomerResponse> customers = customerService.getAllCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers));
     }
 
-    // Customer can view own, Manager/Admin can view any
+    // Customer can view own, Manager/Admin can view any (ownership check)
     @PreAuthorize("#id == authentication.principal.id or hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable Integer id) {
@@ -48,8 +47,8 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // Customer can update own profile
-    @PreAuthorize("#id == authentication.principal.id")
+    // Customer can update own profile (ownership check)
+    @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
             @PathVariable Integer id,
@@ -58,7 +57,7 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.success("Customer updated successfully", response));
     }
 
-    // Customer can delete own account, or Admin
+    // Customer can delete own account, or Admin (ownership check)
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Integer id) {

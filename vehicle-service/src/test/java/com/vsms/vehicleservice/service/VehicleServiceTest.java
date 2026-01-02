@@ -163,4 +163,40 @@ class VehicleServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> vehicleService.deleteVehicle(999));
     }
+
+    @Test
+    void getVehicleCount_Success() {
+        when(vehicleRepository.count()).thenReturn(5L);
+
+        long count = vehicleService.getVehicleCount();
+
+        assertEquals(5L, count);
+    }
+
+    @Test
+    void isOwner_ReturnsTrue_WhenCustomerOwnsVehicle() {
+        when(vehicleRepository.findById(1)).thenReturn(Optional.of(testVehicle));
+
+        boolean result = vehicleService.isOwner(1, 1);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void isOwner_ReturnsFalse_WhenCustomerDoesNotOwnVehicle() {
+        when(vehicleRepository.findById(1)).thenReturn(Optional.of(testVehicle));
+
+        boolean result = vehicleService.isOwner(1, 999);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isOwner_ReturnsFalse_WhenVehicleNotFound() {
+        when(vehicleRepository.findById(999)).thenReturn(Optional.empty());
+
+        boolean result = vehicleService.isOwner(999, 1);
+
+        assertFalse(result);
+    }
 }

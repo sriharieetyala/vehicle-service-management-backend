@@ -2,7 +2,6 @@ package com.vsms.authservice.controller;
 
 import com.vsms.authservice.dto.request.ChangePasswordRequest;
 import com.vsms.authservice.dto.request.LoginRequest;
-import com.vsms.authservice.dto.request.RefreshRequest;
 import com.vsms.authservice.dto.response.ApiResponse;
 import com.vsms.authservice.dto.response.AuthResponse;
 import com.vsms.authservice.security.CustomUserPrincipal;
@@ -20,19 +19,13 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // 1. Login - Returns access + refresh tokens directly
+    // 1. Login - Returns access token
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    // 2. Refresh token - Get new access token
-    @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
-        return ResponseEntity.ok(authService.refresh(request.getRefreshToken()));
-    }
-
-    // 3. Get current user info
+    // 2. Get current user info
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Object>> getCurrentUser(
             @AuthenticationPrincipal CustomUserPrincipal principal) {

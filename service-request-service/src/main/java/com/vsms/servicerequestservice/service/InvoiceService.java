@@ -220,4 +220,14 @@ public class InvoiceService {
                 .createdAt(invoice.getCreatedAt())
                 .build();
     }
+
+    /**
+     * Check if a customer owns an invoice (for @PreAuthorize ownership checks)
+     */
+    @Transactional(readOnly = true)
+    public boolean isOwner(Integer invoiceId, Integer customerId) {
+        return invoiceRepository.findById(invoiceId)
+                .map(inv -> inv.getCustomerId().equals(customerId))
+                .orElse(false);
+    }
 }

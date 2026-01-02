@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
     private String accessToken;
-    private String refreshToken;
     private String tokenType;
     private Integer userId;
     private String email;
@@ -19,11 +18,10 @@ public class AuthResponse {
     private String firstName;
     private String lastName;
 
-    public static AuthResponse of(String accessToken, String refreshToken, Integer userId,
+    public static AuthResponse of(String accessToken, Integer userId,
             String email, String role, String firstName, String lastName) {
         return AuthResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .userId(userId)
                 .email(email)

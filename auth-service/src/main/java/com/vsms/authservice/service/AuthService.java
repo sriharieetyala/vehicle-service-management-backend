@@ -43,9 +43,8 @@ public class AuthService {
             }
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
                 String accessToken = tokenProvider.generateAccessToken(c.getId(), user.getEmail(), "CUSTOMER");
-                String refreshToken = tokenProvider.generateRefreshToken(user.getEmail());
                 log.info("Customer logged in: {}", email);
-                return AuthResponse.of(accessToken, refreshToken, c.getId(), user.getEmail(),
+                return AuthResponse.of(accessToken, c.getId(), user.getEmail(),
                         "CUSTOMER", c.getFirstName(), c.getLastName());
             }
         }
@@ -60,9 +59,8 @@ public class AuthService {
             }
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
                 String accessToken = tokenProvider.generateAccessToken(t.getId(), user.getEmail(), "TECHNICIAN");
-                String refreshToken = tokenProvider.generateRefreshToken(user.getEmail());
                 log.info("Technician logged in: {}", email);
-                return AuthResponse.of(accessToken, refreshToken, t.getId(), user.getEmail(),
+                return AuthResponse.of(accessToken, t.getId(), user.getEmail(),
                         "TECHNICIAN", t.getFirstName(), t.getLastName());
             }
         }
@@ -77,9 +75,8 @@ public class AuthService {
             }
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
                 String accessToken = tokenProvider.generateAccessToken(m.getId(), user.getEmail(), "MANAGER");
-                String refreshToken = tokenProvider.generateRefreshToken(user.getEmail());
                 log.info("Manager logged in: {}", email);
-                return AuthResponse.of(accessToken, refreshToken, m.getId(), user.getEmail(),
+                return AuthResponse.of(accessToken, m.getId(), user.getEmail(),
                         "MANAGER", m.getFirstName(), m.getLastName());
             }
         }
@@ -91,57 +88,13 @@ public class AuthService {
             AppUser user = a.getUser();
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
                 String accessToken = tokenProvider.generateAccessToken(a.getId(), user.getEmail(), "ADMIN");
-                String refreshToken = tokenProvider.generateRefreshToken(user.getEmail());
                 log.info("Admin logged in: {}", email);
-                return AuthResponse.of(accessToken, refreshToken, a.getId(), user.getEmail(),
+                return AuthResponse.of(accessToken, a.getId(), user.getEmail(),
                         "ADMIN", a.getFirstName(), a.getLastName());
             }
         }
 
         throw new UnauthorizedException("Invalid email or password");
-    }
-
-    public AuthResponse refresh(String refreshToken) {
-        if (!tokenProvider.validateToken(refreshToken)) {
-            throw new UnauthorizedException("Invalid or expired refresh token");
-        }
-
-        String email = tokenProvider.getEmailFromToken(refreshToken);
-
-        // Find user and generate new access token
-        Optional<Customer> customer = customerRepository.findByUserEmail(email);
-        if (customer.isPresent()) {
-            Customer c = customer.get();
-            String accessToken = tokenProvider.generateAccessToken(c.getId(), c.getUser().getEmail(), "CUSTOMER");
-            return AuthResponse.of(accessToken, refreshToken, c.getId(), c.getUser().getEmail(),
-                    "CUSTOMER", c.getFirstName(), c.getLastName());
-        }
-
-        Optional<Technician> technician = technicianRepository.findByUserEmail(email);
-        if (technician.isPresent()) {
-            Technician t = technician.get();
-            String accessToken = tokenProvider.generateAccessToken(t.getId(), t.getUser().getEmail(), "TECHNICIAN");
-            return AuthResponse.of(accessToken, refreshToken, t.getId(), t.getUser().getEmail(),
-                    "TECHNICIAN", t.getFirstName(), t.getLastName());
-        }
-
-        Optional<Manager> manager = managerRepository.findByUserEmail(email);
-        if (manager.isPresent()) {
-            Manager m = manager.get();
-            String accessToken = tokenProvider.generateAccessToken(m.getId(), m.getUser().getEmail(), "MANAGER");
-            return AuthResponse.of(accessToken, refreshToken, m.getId(), m.getUser().getEmail(),
-                    "MANAGER", m.getFirstName(), m.getLastName());
-        }
-
-        Optional<Admin> admin = adminRepository.findByUserEmail(email);
-        if (admin.isPresent()) {
-            Admin a = admin.get();
-            String accessToken = tokenProvider.generateAccessToken(a.getId(), a.getUser().getEmail(), "ADMIN");
-            return AuthResponse.of(accessToken, refreshToken, a.getId(), a.getUser().getEmail(),
-                    "ADMIN", a.getFirstName(), a.getLastName());
-        }
-
-        throw new UnauthorizedException("User not found");
     }
 
     public void changePassword(CustomUserPrincipal principal, ChangePasswordRequest request) {

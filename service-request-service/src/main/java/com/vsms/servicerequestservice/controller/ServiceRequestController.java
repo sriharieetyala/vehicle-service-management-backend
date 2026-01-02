@@ -27,9 +27,8 @@ public class ServiceRequestController {
 
     private final ServiceRequestService service;
 
-    // 1. Create service request (Customer only) - returns just ID
+    // Create service request (role check done at gateway)
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CreatedResponse> create(
             @Valid @RequestBody ServiceRequestCreateDTO dto) {
         ServiceRequestResponse response = service.createRequest(dto);
@@ -38,104 +37,93 @@ public class ServiceRequestController {
                 HttpStatus.CREATED);
     }
 
-    // 2. Get by ID (Any authenticated user)
+    // Get by ID (role check done at gateway)
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success(service.getById(id)));
     }
 
-    // 3. Get by customer ID (Customer, Manager, Admin)
+    // Get by customer ID - ownership check: customer can only see their own
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN') or #customerId == authentication.principal.id")
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getByCustomer(
             @PathVariable Integer customerId) {
         return ResponseEntity.ok(ApiResponse.success(service.getByCustomerId(customerId)));
     }
 
-    // 4. Get vehicle service history (Customer, Manager, Admin)
+    // Get vehicle service history (role check done at gateway)
     @GetMapping("/vehicle/{vehicleId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getByVehicle(
             @PathVariable Integer vehicleId) {
         return ResponseEntity.ok(ApiResponse.success(service.getByVehicleId(vehicleId)));
     }
 
-    // 5. Get all (Manager, Admin only)
+    // Get all (role check done at gateway)
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getAll(
             @RequestParam(required = false) RequestStatus status) {
         return ResponseEntity.ok(ApiResponse.success(service.getAll(status)));
     }
 
-    // 6. Get by technician ID (Technician, Manager, Admin)
+    // Get by technician ID (role check done at gateway)
     @GetMapping("/technician/{technicianId}")
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getByTechnician(
             @PathVariable Integer technicianId,
             @RequestParam(required = false) RequestStatus status) {
         return ResponseEntity.ok(ApiResponse.success(service.getByTechnicianId(technicianId, status)));
     }
 
-    // 7. Assign technician + bay (Manager only)
+    // Assign technician + bay (role check done at gateway)
     @PutMapping("/{id}/assign")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> assign(
             @PathVariable Integer id,
             @Valid @RequestBody AssignTechnicianDTO dto) {
         return ResponseEntity.ok(ApiResponse.success("Technician assigned", service.assignTechnician(id, dto)));
     }
 
-    // 8. Update status (Technician only)
+    // Update status (role check done at gateway)
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('TECHNICIAN')")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> updateStatus(
             @PathVariable Integer id,
             @Valid @RequestBody StatusUpdateDTO dto) {
         return ResponseEntity.ok(ApiResponse.success("Status updated", service.updateStatus(id, dto)));
     }
 
-    // 10. Set Pricing (Manager only)
+    // Set Pricing (role check done at gateway)
     @PutMapping("/{id}/set-pricing")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> setPricing(
             @PathVariable Integer id,
             @RequestBody CompleteWorkDTO dto) {
         return ResponseEntity.ok(ApiResponse.success("Pricing set", service.setPricing(id, dto)));
     }
 
-    // 11. Cancel request (Customer only)
+    // Cancel request - ownership check: customer can only cancel their own
     @PutMapping("/{id}/cancel")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("@serviceRequestService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> cancel(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success("Request cancelled", service.cancelRequest(id)));
     }
 
-    // 11. Get dashboard stats (Manager, Admin)
+    // Get dashboard stats (role check done at gateway)
     @GetMapping("/stats")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<DashboardStats>> getStats() {
         return ResponseEntity.ok(ApiResponse.success(service.getStats()));
     }
 
-    // 12. Get all bay status (Manager, Admin)
+    // Get all bay status (role check done at gateway)
     @GetMapping("/bays")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<BayStatus>>> getAllBays() {
         return ResponseEntity.ok(ApiResponse.success(service.getAllBayStatus()));
     }
 
-    // 13. Get available bays (Manager, Admin)
+    // Get available bays (role check done at gateway)
     @GetMapping("/bays/available")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<Integer>>> getAvailableBays() {
         return ResponseEntity.ok(ApiResponse.success(service.getAvailableBays()));
     }
 
-    // 14. Get parts cost (Manager)
+    // Get parts cost (role check done at gateway)
     @GetMapping("/{id}/parts-cost")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<java.math.BigDecimal>> getPartsCost(@PathVariable Integer id) {
         return ResponseEntity
                 .ok(ApiResponse.success("Parts cost from inventory", service.getPartsCostFromInventory(id)));

@@ -32,32 +32,28 @@ public class TechnicianController {
                 HttpStatus.CREATED);
     }
 
-    // Manager/Admin can view all technicians
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    // Get all technicians (role check done at gateway)
     @GetMapping
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getAllTechnicians() {
         List<TechnicianResponse> technicians = technicianService.getAllTechnicians();
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Manager/Admin can view technician by ID
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    // Get technician by ID (role check done at gateway)
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TechnicianResponse>> getTechnicianById(@PathVariable Integer id) {
         TechnicianResponse response = technicianService.getTechnicianById(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // Manager/Admin can view available technicians
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    // Get available technicians (role check done at gateway)
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getAvailableTechnicians() {
         List<TechnicianResponse> technicians = technicianService.getAvailableTechnicians();
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Manager/Admin can view by specialization
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    // Get by specialization (role check done at gateway)
     @GetMapping("/by-specialization")
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getBySpecialization(
             @RequestParam Specialization spec) {
@@ -65,16 +61,14 @@ public class TechnicianController {
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Manager/Admin can view pending
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    // Get pending technicians (role check done at gateway)
     @GetMapping("/pending")
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getPendingTechnicians() {
         List<TechnicianResponse> technicians = technicianService.getPendingTechnicians();
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Only Admin can approve/reject technicians
-    @PreAuthorize("hasRole('ADMIN')")
+    // Review technician (role check done at gateway)
     @PutMapping("/{id}/review")
     public ResponseEntity<ApiResponse<TechnicianResponse>> reviewTechnician(
             @PathVariable Integer id,
@@ -90,7 +84,7 @@ public class TechnicianController {
         }
     }
 
-    // Technician can toggle own duty status
+    // Technician can toggle own duty status (ownership check)
     @PreAuthorize("#id == authentication.principal.id or hasRole('MANAGER')")
     @PutMapping("/{id}/duty")
     public ResponseEntity<ApiResponse<TechnicianResponse>> toggleDutyStatus(@PathVariable Integer id) {
@@ -98,7 +92,8 @@ public class TechnicianController {
         return ResponseEntity.ok(ApiResponse.success("Duty status toggled", response));
     }
 
-    // Internal - workload updated by service-request-service
+    // Internal - workload updated by service-request-service (no auth - internal
+    // only)
     @PutMapping("/{id}/workload")
     public ResponseEntity<ApiResponse<Void>> updateWorkload(
             @PathVariable Integer id,
@@ -114,7 +109,7 @@ public class TechnicianController {
         }
     }
 
-    // Technician can delete own account, or Admin
+    // Technician can delete own account (ownership check)
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTechnician(@PathVariable Integer id) {

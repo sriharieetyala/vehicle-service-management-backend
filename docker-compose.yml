@@ -35,6 +35,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # 1. Service Registry (Eureka) - starts first
   service-registry:
     build: ./service-registry
     container_name: vsms-service-registry
@@ -47,24 +48,58 @@ services:
         condition: service_healthy
     networks:
       - vsms-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
+  # 2. Config Server - starts after Eureka
+  config-server:
+    build: ./config-server
+    container_name: vsms-config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - vsms-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -q --spider http://localhost:8888/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # 3. API Gateway - starts after Config Server
   api-gateway:
     build: ./api-gateway
     container_name: vsms-api-gateway
     ports:
       - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
     depends_on:
-      - service-registry
+      config-server:
+        condition: service_healthy
     networks:
       - vsms-network
 
+  # 4. Services - start after Config Server
   auth-service:
     build: ./auth-service
     container_name: vsms-auth-service
     ports:
       - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
     depends_on:
-      - service-registry
+      config-server:
+        condition: service_healthy
     networks:
       - vsms-network
 
@@ -73,8 +108,12 @@ services:
     container_name: vsms-vehicle-service
     ports:
       - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
     depends_on:
-      - service-registry
+      config-server:
+        condition: service_healthy
     networks:
       - vsms-network
 
@@ -83,8 +122,12 @@ services:
     container_name: vsms-service-request-service
     ports:
       - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
     depends_on:
-      - service-registry
+      config-server:
+        condition: service_healthy
     networks:
       - vsms-network
 
@@ -93,8 +136,12 @@ services:
     container_name: vsms-inventory-service
     ports:
       - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
     depends_on:
-      - service-registry
+      config-server:
+        condition: service_healthy
     networks:
       - vsms-network
 
@@ -103,11 +150,15 @@ services:
     container_name: vsms-notification-service
     ports:
       - "8086:8086"
-    depends_on:
-      - service-registry
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - MAIL_USERNAME=${MAIL_USERNAME:-test@gmail.com}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-test-password}
+    depends_on:
+      config-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - vsms-network
 

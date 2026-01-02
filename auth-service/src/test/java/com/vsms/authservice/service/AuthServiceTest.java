@@ -323,4 +323,62 @@ class AuthServiceTest {
 
         assertThrows(UnauthorizedException.class, () -> authService.login(request));
     }
+
+    @Test
+    void login_CustomerDeactivated_ThrowsUnauthorized() {
+        testCustomer.getUser().setStatus(UserStatus.INACTIVE);
+
+        LoginRequest request = new LoginRequest();
+        request.setEmail("customer@test.com");
+        request.setPassword("password123");
+
+        when(customerRepository.findByUserEmail("customer@test.com")).thenReturn(Optional.of(testCustomer));
+
+        assertThrows(UnauthorizedException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_TechnicianWrongPassword_ThrowsUnauthorized() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("tech@test.com");
+        request.setPassword("wrongPassword");
+
+        when(customerRepository.findByUserEmail("tech@test.com")).thenReturn(Optional.empty());
+        when(technicianRepository.findByUserEmail("tech@test.com")).thenReturn(Optional.of(testTechnician));
+        when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+        when(managerRepository.findByUserEmail("tech@test.com")).thenReturn(Optional.empty());
+        when(adminRepository.findByUserEmail("tech@test.com")).thenReturn(Optional.empty());
+
+        assertThrows(UnauthorizedException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_ManagerWrongPassword_ThrowsUnauthorized() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("manager@test.com");
+        request.setPassword("wrongPassword");
+
+        when(customerRepository.findByUserEmail("manager@test.com")).thenReturn(Optional.empty());
+        when(technicianRepository.findByUserEmail("manager@test.com")).thenReturn(Optional.empty());
+        when(managerRepository.findByUserEmail("manager@test.com")).thenReturn(Optional.of(testManager));
+        when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+        when(adminRepository.findByUserEmail("manager@test.com")).thenReturn(Optional.empty());
+
+        assertThrows(UnauthorizedException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_AdminWrongPassword_ThrowsUnauthorized() {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("admin@test.com");
+        request.setPassword("wrongPassword");
+
+        when(customerRepository.findByUserEmail("admin@test.com")).thenReturn(Optional.empty());
+        when(technicianRepository.findByUserEmail("admin@test.com")).thenReturn(Optional.empty());
+        when(managerRepository.findByUserEmail("admin@test.com")).thenReturn(Optional.empty());
+        when(adminRepository.findByUserEmail("admin@test.com")).thenReturn(Optional.of(testAdmin));
+        when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+
+        assertThrows(UnauthorizedException.class, () -> authService.login(request));
+    }
 }
