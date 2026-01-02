@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final HeaderAuthenticationFilter headerAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,7 +36,7 @@ public class SecurityConfig {
                         // Public endpoints - registration and login
                         .requestMatchers(HttpMethod.POST, "/api/customers").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/technicians").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
 
                         // Internal endpoints (Feign calls)
                         .requestMatchers("/api/technicians/*/workload").permitAll()
@@ -48,7 +49,10 @@ public class SecurityConfig {
 
                         // All other requests require authentication
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // HeaderAuthenticationFilter runs FIRST - reads X-User-Role from gateway
+                .addFilterBefore(headerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // JwtAuthenticationFilter runs after - for direct service access
+                .addFilterAfter(jwtAuthenticationFilter, HeaderAuthenticationFilter.class);
 
         return http.build();
     }
