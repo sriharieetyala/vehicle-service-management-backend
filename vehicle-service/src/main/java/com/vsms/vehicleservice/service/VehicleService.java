@@ -47,6 +47,7 @@ public class VehicleService {
                 .model(request.getModel())
                 .year(request.getYear())
                 .fuelType(request.getFuelType())
+                .vehicleType(request.getVehicleType())
                 .build();
 
         Vehicle saved = vehicleRepository.save(vehicle);
@@ -94,6 +95,9 @@ public class VehicleService {
         if (request.getFuelType() != null) {
             vehicle.setFuelType(request.getFuelType());
         }
+        if (request.getVehicleType() != null) {
+            vehicle.setVehicleType(request.getVehicleType());
+        }
 
         Vehicle updated = vehicleRepository.save(vehicle);
         return mapToResponse(updated);
@@ -139,6 +143,7 @@ public class VehicleService {
                 .model(vehicle.getModel())
                 .year(vehicle.getYear())
                 .fuelType(vehicle.getFuelType())
+                .vehicleType(vehicle.getVehicleType())
                 .createdAt(vehicle.getCreatedAt())
                 .build();
     }

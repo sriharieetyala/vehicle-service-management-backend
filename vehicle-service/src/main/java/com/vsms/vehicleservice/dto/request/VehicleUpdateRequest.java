@@ -1,6 +1,7 @@
 package com.vsms.vehicleservice.dto.request;
 
 import com.vsms.vehicleservice.enums.FuelType;
+import com.vsms.vehicleservice.enums.VehicleType;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -22,4 +23,6 @@ public class VehicleUpdateRequest {
     private Integer year;
 
     private FuelType fuelType;
+
+    private VehicleType vehicleType;
 }

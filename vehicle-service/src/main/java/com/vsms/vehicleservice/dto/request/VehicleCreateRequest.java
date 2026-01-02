@@ -1,6 +1,7 @@
 package com.vsms.vehicleservice.dto.request;
 
 import com.vsms.vehicleservice.enums.FuelType;
+import com.vsms.vehicleservice.enums.VehicleType;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -33,4 +34,7 @@ public class VehicleCreateRequest {
 
     @NotNull(message = "Fuel type is required")
     private FuelType fuelType;
+
+    @NotNull(message = "Vehicle type is required")
+    private VehicleType vehicleType;
 }

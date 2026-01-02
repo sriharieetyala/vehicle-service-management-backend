@@ -1,6 +1,7 @@
 package com.vsms.vehicleservice.entity;
 
 import com.vsms.vehicleservice.enums.FuelType;
+import com.vsms.vehicleservice.enums.VehicleType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,6 +43,10 @@ public class Vehicle {
     @Enumerated(EnumType.STRING)
     @Column(name = "fuel_type", nullable = false, length = 20)
     private FuelType fuelType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vehicle_type", nullable = false, length = 20)
+    private VehicleType vehicleType;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
