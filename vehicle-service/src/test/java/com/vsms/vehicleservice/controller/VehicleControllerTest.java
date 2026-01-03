@@ -5,6 +5,7 @@ import com.vsms.vehicleservice.dto.request.VehicleCreateRequest;
 import com.vsms.vehicleservice.dto.request.VehicleUpdateRequest;
 import com.vsms.vehicleservice.dto.response.VehicleResponse;
 import com.vsms.vehicleservice.enums.FuelType;
+import com.vsms.vehicleservice.enums.VehicleType;
 import com.vsms.vehicleservice.service.VehicleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,6 +67,7 @@ class VehicleControllerTest {
         request.setModel("Camry");
         request.setYear(2022);
         request.setFuelType(FuelType.PETROL);
+        request.setVehicleType(VehicleType.FOUR_WHEELER);
 
         when(vehicleService.createVehicle(any(VehicleCreateRequest.class))).thenReturn(testResponse);
 

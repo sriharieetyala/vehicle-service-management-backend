@@ -3,6 +3,7 @@ package com.vsms.vehicleservice.service;
 import com.vsms.vehicleservice.client.AuthServiceClient;
 import com.vsms.vehicleservice.dto.request.VehicleCreateRequest;
 import com.vsms.vehicleservice.dto.request.VehicleUpdateRequest;
+import com.vsms.vehicleservice.dto.response.ApiResponse;
 import com.vsms.vehicleservice.dto.response.VehicleResponse;
 import com.vsms.vehicleservice.entity.Vehicle;
 import com.vsms.vehicleservice.enums.FuelType;
@@ -36,9 +37,12 @@ class VehicleServiceTest {
     private VehicleService vehicleService;
 
     private Vehicle testVehicle;
+    private ApiResponse<?> mockCustomerResponse;
 
     @BeforeEach
     void setUp() {
+        mockCustomerResponse = new ApiResponse<>(true, "Customer found", new Object(), LocalDateTime.now());
+
         testVehicle = Vehicle.builder()
                 .id(1)
                 .customerId(1)
@@ -61,7 +65,7 @@ class VehicleServiceTest {
         request.setYear(2022);
         request.setFuelType(FuelType.PETROL);
 
-        when(authServiceClient.getCustomerById(1)).thenReturn(null);
+        doReturn(mockCustomerResponse).when(authServiceClient).getCustomerById(1);
         when(vehicleRepository.existsByPlateNumber("KA01AB1234")).thenReturn(false);
         when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(inv -> {
             Vehicle v = inv.getArgument(0);
@@ -84,7 +88,7 @@ class VehicleServiceTest {
         request.setCustomerId(999);
         request.setPlateNumber("KA01AB1234");
 
-        when(authServiceClient.getCustomerById(999)).thenThrow(new RuntimeException("Not found"));
+        when(authServiceClient.getCustomerById(999)).thenReturn(null);
 
         assertThrows(ResourceNotFoundException.class, () -> vehicleService.createVehicle(request));
     }
@@ -95,7 +99,7 @@ class VehicleServiceTest {
         request.setCustomerId(1);
         request.setPlateNumber("KA01AB1234");
 
-        when(authServiceClient.getCustomerById(1)).thenReturn(null);
+        doReturn(mockCustomerResponse).when(authServiceClient).getCustomerById(1);
         when(vehicleRepository.existsByPlateNumber("KA01AB1234")).thenReturn(true);
 
         assertThrows(DuplicateResourceException.class, () -> vehicleService.createVehicle(request));
