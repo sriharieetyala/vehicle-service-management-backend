@@ -24,15 +24,7 @@ pipeline {
 
         stage('SonarCloud Analysis') {
             steps {
-                bat '''
-                    mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar ^
-                    -Dsonar.projectKey=sriharieetyala_vehicle-service-management-backend ^
-                    -Dsonar.organization=sriharieetyala ^
-                    -Dsonar.host.url=https://sonarcloud.io ^
-                    -Dsonar.token=%SONAR_TOKEN% ^
-                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml ^
-                    -Dsonar.exclusions=**/entity/**,**/dto/**,**/enums/**,**/config/**,**/exception/**,**/repository/**,**/security/**,**/client/**,**/*Application.java
-                '''
+                bat 'mvn sonar:sonar -Dsonar.token=%SONAR_TOKEN%'
             }
         }
 

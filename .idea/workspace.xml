@@ -6,41 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b005b2fa-499a-4867-8170-fa457a3028a1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/Jenkinsfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/vsms/apigateway/filter/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/vsms/apigateway/filter/JwtAuthenticationFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/vsms/authservice/service/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartRequestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartRequestController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/service/PartRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/service/PartRequestService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory-service/src/test/java/com/vsms/inventoryservice/service/PartRequestServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/test/java/com/vsms/inventoryservice/service/PartRequestServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/client/AuthServiceClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/client/AuthServiceClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/client/AuthServiceClientFallback.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/client/AuthServiceClientFallback.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/controller/ServiceRequestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/controller/ServiceRequestController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/ServiceRequestCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/request/ServiceRequestCreateDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/response/ServiceRequestResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/dto/response/ServiceRequestResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/entity/ServiceRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/entity/ServiceRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/InvoiceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/InvoiceService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/NotificationPublisher.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/NotificationPublisher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/ServiceRequestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/main/java/com/vsms/servicerequestservice/service/ServiceRequestService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/controller/ServiceRequestControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/controller/ServiceRequestControllerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/service/InvoiceServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/service/InvoiceServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/service/NotificationPublisherTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/service/NotificationPublisherTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/service/ServiceRequestServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/service-request-service/src/test/java/com/vsms/servicerequestservice/service/ServiceRequestServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vehicle-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/controller/VehicleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/controller/VehicleController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/main/java/com/vsms/vehicleservice/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vehicle-service/src/test/java/com/vsms/vehicleservice/controller/VehicleControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/test/java/com/vsms/vehicleservice/controller/VehicleControllerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vehicle-service/src/test/java/com/vsms/vehicleservice/service/VehicleServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/vehicle-service/src/test/java/com/vsms/vehicleservice/service/VehicleServiceTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -205,7 +171,7 @@
       <workItem from="1767412031933" duration="11044000" />
       <workItem from="1767433268756" duration="12666000" />
       <workItem from="1767501371376" duration="11561000" />
-      <workItem from="1767587102648" duration="8159000" />
+      <workItem from="1767587102648" duration="9954000" />
     </task>
     <servers />
   </component>
