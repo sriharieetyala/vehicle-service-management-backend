@@ -96,6 +96,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             Map.entry("POST:/api/parts", List.of("MANAGER", "INVENTORY_MANAGER")),
             Map.entry("GET:/api/parts/low-stock", List.of("MANAGER", "INVENTORY_MANAGER")),
             Map.entry("GET:/api/parts", List.of("TECHNICIAN", "MANAGER", "INVENTORY_MANAGER")),
+            Map.entry("GET:/api/parts/", List.of("TECHNICIAN", "MANAGER", "INVENTORY_MANAGER")),
+            Map.entry("PUT:/api/parts/", List.of("MANAGER", "INVENTORY_MANAGER")),
 
             Map.entry("POST:/api/part-requests", List.of("TECHNICIAN")),
             Map.entry("GET:/api/part-requests/pending", List.of("MANAGER", "INVENTORY_MANAGER")),

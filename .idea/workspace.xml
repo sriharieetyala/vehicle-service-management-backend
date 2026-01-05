@@ -7,6 +7,9 @@
     <list default="true" id="b005b2fa-499a-4867-8170-fa457a3028a1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/vsms/apigateway/filter/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/vsms/apigateway/filter/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartController.java" beforeDir="false" afterPath="$PROJECT_DIR$/inventory-service/src/main/java/com/vsms/inventoryservice/controller/PartController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,7 +174,8 @@
       <workItem from="1767412031933" duration="11044000" />
       <workItem from="1767433268756" duration="12666000" />
       <workItem from="1767501371376" duration="11561000" />
-      <workItem from="1767587102648" duration="9954000" />
+      <workItem from="1767587102648" duration="11730000" />
+      <workItem from="1767619184063" duration="3591000" />
     </task>
     <servers />
   </component>
