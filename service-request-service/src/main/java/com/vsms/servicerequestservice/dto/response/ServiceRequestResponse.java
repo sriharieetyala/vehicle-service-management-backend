@@ -28,4 +28,5 @@ public class ServiceRequestResponse {
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
     private LocalDateTime createdAt;
+    private LocalDateTime preferredDate;
 }

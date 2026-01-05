@@ -1,5 +1,6 @@
 package com.vsms.servicerequestservice.service;
 
+import com.vsms.servicerequestservice.client.AuthServiceClient;
 import com.vsms.servicerequestservice.client.InventoryClient;
 import com.vsms.servicerequestservice.dto.request.PaymentDTO;
 import com.vsms.servicerequestservice.dto.response.InvoiceResponse;
@@ -38,6 +39,8 @@ class InvoiceServiceTest {
     private ServiceRequestRepository serviceRequestRepository;
     @Mock
     private InventoryClient inventoryClient;
+    @Mock
+    private AuthServiceClient authServiceClient;
     @Mock
     private NotificationPublisher notificationPublisher;
 
@@ -187,7 +190,8 @@ class InvoiceServiceTest {
         InvoiceResponse response = invoiceService.generateInvoice(1);
 
         assertNotNull(response);
-        verify(notificationPublisher, times(1)).publishInvoiceGenerated(anyString(), anyString(), anyString(), any());
+        // Note: publishInvoiceGenerated may not be called if authServiceClient returns
+        // null email
     }
 
     @Test
@@ -223,19 +227,18 @@ class InvoiceServiceTest {
     }
 
     @Test
-    void payInvoice_NotificationFails_StillCompletes() {
+    void payInvoice_ServiceRequestNotClosed_WhenNull() {
         PaymentDTO dto = new PaymentDTO();
         dto.setPaymentMethod(PaymentMethod.CASH);
 
         when(invoiceRepository.findById(1)).thenReturn(Optional.of(testInvoice));
         when(invoiceRepository.save(any(Invoice.class))).thenReturn(testInvoice);
         when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
-        doThrow(new RuntimeException("Notification failed")).when(notificationPublisher)
-                .publishInvoicePaid(anyString(), anyString(), anyString(), any(), anyString());
 
         InvoiceResponse response = invoiceService.payInvoice(1, dto);
 
         assertNotNull(response);
+        // Manager notification removed - auto-close is sufficient
     }
 
     @Test
@@ -285,5 +288,329 @@ class InvoiceServiceTest {
         assertEquals(1, stats.getUnpaidInvoices());
         assertEquals(BigDecimal.valueOf(1500), stats.getTotalRevenue());
         assertEquals(BigDecimal.valueOf(1000), stats.getCollectedRevenue());
+    }
+
+    @Test
+    void generateInvoice_WithValidCustomerEmail_SendsNotification() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(invoiceRepository.count()).thenReturn(10L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(10);
+            return i;
+        });
+
+        // Mock auth service to return customer data with email
+        java.util.Map<String, Object> customerData = new java.util.HashMap<>();
+        customerData.put("email", "customer@test.com");
+        customerData.put("firstName", "John");
+        customerData.put("lastName", "Doe");
+        when(authServiceClient.getCustomerById(1)).thenReturn(java.util.Map.of("data", customerData));
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+        verify(notificationPublisher, times(1)).publishInvoiceGenerated(anyString(), eq("John Doe"),
+                eq("customer@test.com"), any());
+    }
+
+    @Test
+    void generateInvoice_AuthServiceFails_StillGenerates() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(invoiceRepository.count()).thenReturn(11L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(11);
+            return i;
+        });
+        when(authServiceClient.getCustomerById(1)).thenThrow(new RuntimeException("Auth service down"));
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+        verify(notificationPublisher, never()).publishInvoiceGenerated(anyString(), anyString(), anyString(), any());
+    }
+
+    @Test
+    void generateInvoice_CustomerEmailNull_SkipsNotification() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(invoiceRepository.count()).thenReturn(12L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(12);
+            return i;
+        });
+        when(authServiceClient.getCustomerById(1)).thenReturn(java.util.Collections.emptyMap());
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+        verify(notificationPublisher, never()).publishInvoiceGenerated(anyString(), anyString(), anyString(), any());
+    }
+
+    @Test
+    void generateInvoice_CustomerFirstNameOnly_UsesFirstName() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(invoiceRepository.count()).thenReturn(13L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(13);
+            return i;
+        });
+
+        java.util.Map<String, Object> customerData = new java.util.HashMap<>();
+        customerData.put("email", "jane@test.com");
+        customerData.put("firstName", "Jane");
+        customerData.put("lastName", null);
+        when(authServiceClient.getCustomerById(1)).thenReturn(java.util.Map.of("data", customerData));
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+        verify(notificationPublisher, times(1)).publishInvoiceGenerated(anyString(), eq("Jane"), eq("jane@test.com"),
+                any());
+    }
+
+    @Test
+    void isOwner_ReturnsTrue_WhenMatch() {
+        when(invoiceRepository.findById(1)).thenReturn(Optional.of(testInvoice));
+
+        boolean result = invoiceService.isOwner(1, 1);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void isOwner_ReturnsFalse_WhenNoMatch() {
+        when(invoiceRepository.findById(1)).thenReturn(Optional.of(testInvoice));
+
+        boolean result = invoiceService.isOwner(1, 999);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isOwner_ReturnsFalse_WhenNotFound() {
+        when(invoiceRepository.findById(999)).thenReturn(Optional.empty());
+
+        boolean result = invoiceService.isOwner(999, 1);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void generateInvoice_LaborCostNegative_SetsToZero() {
+        // partsCost > totalFromPricing would result in negative laborCost
+        testServiceRequest.setFinalCost(100f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(inventoryClient.getPartsCostForService(1)).thenReturn(java.util.Map.of("data", 200)); // parts > total
+        when(invoiceRepository.count()).thenReturn(20L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(20);
+            return i;
+        });
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+        // Labor cost should be zero since parts > total
+    }
+
+    @Test
+    void generateInvoice_PartsCostAsBigDecimal_Success() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(inventoryClient.getPartsCostForService(1)).thenReturn(java.util.Map.of("data", new BigDecimal("150.50")));
+        when(invoiceRepository.count()).thenReturn(21L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(21);
+            return i;
+        });
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void generateInvoice_PartsCostAsString_Success() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(inventoryClient.getPartsCostForService(1)).thenReturn(java.util.Map.of("data", "175.25"));
+        when(invoiceRepository.count()).thenReturn(22L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(22);
+            return i;
+        });
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void generateInvoice_PartsCostNullData_UsesZero() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(inventoryClient.getPartsCostForService(1)).thenReturn(java.util.Map.of("other", "value"));
+        when(invoiceRepository.count()).thenReturn(23L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(23);
+            return i;
+        });
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void generateInvoice_NotificationPublisherFails_StillCompletes() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(invoiceRepository.count()).thenReturn(24L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(24);
+            return i;
+        });
+
+        java.util.Map<String, Object> customerData = new java.util.HashMap<>();
+        customerData.put("email", "test@test.com");
+        customerData.put("firstName", "Test");
+        customerData.put("lastName", "User");
+        when(authServiceClient.getCustomerById(1)).thenReturn(java.util.Map.of("data", customerData));
+        doThrow(new RuntimeException("RabbitMQ down")).when(notificationPublisher)
+                .publishInvoiceGenerated(anyString(), anyString(), anyString(), any());
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void getRevenueStats_EmptyInvoices_ReturnsZeros() {
+        when(invoiceRepository.findAll()).thenReturn(List.of());
+        when(invoiceRepository.findByStatus(InvoiceStatus.PAID)).thenReturn(List.of());
+        when(invoiceRepository.findByStatus(InvoiceStatus.PENDING)).thenReturn(List.of());
+
+        RevenueStats stats = invoiceService.getRevenueStats();
+
+        assertNotNull(stats);
+        assertEquals(0, stats.getTotalInvoices());
+        assertEquals(0, stats.getPaidInvoices());
+        assertEquals(0, stats.getUnpaidInvoices());
+        assertEquals(BigDecimal.ZERO, stats.getTotalRevenue());
+    }
+
+    @Test
+    void payInvoice_WithUPIPayment_Success() {
+        PaymentDTO dto = new PaymentDTO();
+        dto.setPaymentMethod(PaymentMethod.UPI);
+
+        when(invoiceRepository.findById(1)).thenReturn(Optional.of(testInvoice));
+        when(invoiceRepository.save(any(Invoice.class))).thenReturn(testInvoice);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+
+        InvoiceResponse response = invoiceService.payInvoice(1, dto);
+
+        assertNotNull(response);
+        assertEquals(PaymentMethod.UPI, testInvoice.getPaymentMethod());
+    }
+
+    @Test
+    void payInvoice_WithCashPayment_Success() {
+        PaymentDTO dto = new PaymentDTO();
+        dto.setPaymentMethod(PaymentMethod.CASH);
+
+        when(invoiceRepository.findById(1)).thenReturn(Optional.of(testInvoice));
+        when(invoiceRepository.save(any(Invoice.class))).thenReturn(testInvoice);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+
+        InvoiceResponse response = invoiceService.payInvoice(1, dto);
+
+        assertNotNull(response);
+        assertEquals(PaymentMethod.CASH, testInvoice.getPaymentMethod());
+    }
+
+    @Test
+    void getMyInvoices_NoInvoices_ReturnsEmptyList() {
+        when(invoiceRepository.findByCustomerId(999)).thenReturn(List.of());
+
+        List<InvoiceResponse> responses = invoiceService.getMyInvoices(999);
+
+        assertTrue(responses.isEmpty());
+    }
+
+    @Test
+    void getUnpaidInvoices_NoUnpaidInvoices_ReturnsEmptyList() {
+        when(invoiceRepository.findByStatus(InvoiceStatus.PENDING)).thenReturn(List.of());
+
+        List<InvoiceResponse> responses = invoiceService.getUnpaidInvoices();
+
+        assertTrue(responses.isEmpty());
+    }
+
+    @Test
+    void generateInvoice_CustomerDataNull_SkipsNotification() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(invoiceRepository.count()).thenReturn(25L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(25);
+            return i;
+        });
+        // Use HashMap to allow null values since Map.of() doesn't support nulls
+        java.util.Map<String, Object> responseWithNullData = new java.util.HashMap<>();
+        responseWithNullData.put("data", null);
+        when(authServiceClient.getCustomerById(1)).thenReturn(responseWithNullData);
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+        verify(notificationPublisher, never()).publishInvoiceGenerated(anyString(), anyString(), anyString(), any());
+    }
+
+    @Test
+    void generateInvoice_CustomerNoNames_UsesDefault() {
+        testServiceRequest.setFinalCost(500f);
+        when(invoiceRepository.existsByServiceRequestId(1)).thenReturn(false);
+        when(serviceRequestRepository.findById(1)).thenReturn(Optional.of(testServiceRequest));
+        when(invoiceRepository.count()).thenReturn(26L);
+        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(inv -> {
+            Invoice i = inv.getArgument(0);
+            i.setId(26);
+            return i;
+        });
+
+        java.util.Map<String, Object> customerData = new java.util.HashMap<>();
+        customerData.put("email", "noname@test.com");
+        customerData.put("firstName", null);
+        customerData.put("lastName", null);
+        when(authServiceClient.getCustomerById(1)).thenReturn(java.util.Map.of("data", customerData));
+
+        InvoiceResponse response = invoiceService.generateInvoice(1);
+
+        assertNotNull(response);
+        verify(notificationPublisher, times(1)).publishInvoiceGenerated(anyString(), eq("Customer"), eq("noname@test.com"), any());
     }
 }

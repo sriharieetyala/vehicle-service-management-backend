@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "0000"
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
@@ -150,10 +150,12 @@ services:
     container_name: vsms-notification-service
     ports:
       - "8086:8086"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MAIL_USERNAME=${MAIL_USERNAME:-test@gmail.com}
-      - MAIL_PASSWORD=${MAIL_PASSWORD:-test-password}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
     depends_on:
       config-server:
         condition: service_healthy

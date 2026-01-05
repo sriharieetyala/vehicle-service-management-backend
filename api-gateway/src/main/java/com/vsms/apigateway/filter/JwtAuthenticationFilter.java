@@ -32,12 +32,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    // ==================== ROLE-PATH ACCESS CONTROL ====================
+    // ROLE-PATH ACCESS CONTROL
     // Format: "METHOD:PATH_PREFIX" -> List of allowed roles
     // More specific paths are checked first in the matching logic
 
     private static final Map<String, List<String>> ROLE_ACCESS_MAP = Map.ofEntries(
-            // ========== AUTH-SERVICE ==========
+            // AUTH-SERVICE
             // Auth endpoints - any authenticated
             Map.entry("GET:/api/auth/me", List.of("CUSTOMER", "TECHNICIAN", "MANAGER", "ADMIN")),
             Map.entry("POST:/api/auth/logout", List.of("CUSTOMER", "TECHNICIAN", "MANAGER", "ADMIN")),
@@ -99,6 +99,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
             Map.entry("POST:/api/part-requests", List.of("TECHNICIAN")),
             Map.entry("GET:/api/part-requests/pending", List.of("MANAGER", "INVENTORY_MANAGER")),
+            Map.entry("GET:/api/part-requests/technician/", List.of("TECHNICIAN")),
             Map.entry("PUT:/api/part-requests/", List.of("MANAGER", "INVENTORY_MANAGER")),
             Map.entry("GET:/api/part-requests", List.of("TECHNICIAN", "MANAGER", "INVENTORY_MANAGER")));
 

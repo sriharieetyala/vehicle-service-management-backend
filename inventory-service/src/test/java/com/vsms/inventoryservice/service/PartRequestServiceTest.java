@@ -87,14 +87,9 @@ class PartRequestServiceTest {
         verify(repository, times(1)).save(any(PartRequest.class));
     }
 
-    @Test
-    void createRequest_InsufficientStock_ThrowsException() {
-        testPart.setQuantity(5); // Less than requested 10
-        when(partService.findById(1)).thenReturn(testPart);
-
-        assertThrows(InsufficientStockException.class, () -> partRequestService.createRequest(createDTO));
-        verify(repository, never()).save(any(PartRequest.class));
-    }
+    // Note: Stock check during create was removed - technicians can request any
+    // quantity
+    // Inventory manager approves/rejects based on availability
 
     @Test
     void createRequest_PartNotFound_ThrowsException() {

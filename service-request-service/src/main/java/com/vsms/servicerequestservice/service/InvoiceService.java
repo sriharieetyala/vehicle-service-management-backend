@@ -1,5 +1,6 @@
 package com.vsms.servicerequestservice.service;
 
+import com.vsms.servicerequestservice.client.AuthServiceClient;
 import com.vsms.servicerequestservice.client.InventoryClient;
 import com.vsms.servicerequestservice.dto.request.PaymentDTO;
 import com.vsms.servicerequestservice.dto.response.InvoiceResponse;
@@ -32,6 +33,7 @@ public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final ServiceRequestRepository serviceRequestRepository;
     private final InventoryClient inventoryClient;
+    private final AuthServiceClient authServiceClient;
     private final NotificationPublisher notificationPublisher;
 
     public InvoiceResponse generateInvoice(Integer serviceRequestId) {
@@ -79,14 +81,23 @@ public class InvoiceService {
         log.info("Invoice {} generated for service request {}, total: {}", invoiceNumber, serviceRequestId,
                 totalFromPricing);
 
+        // Send notification to customer with real email
         try {
-            notificationPublisher.publishInvoiceGenerated(
-                    invoiceNumber,
-                    "Customer",
-                    "customer@email.com",
-                    totalFromPricing);
+            String customerEmail = getCustomerEmail(sr.getCustomerId());
+            String customerName = getCustomerName(sr.getCustomerId());
+
+            if (customerEmail == null) {
+                log.warn("Customer email not found for customerId: {}. Notification skipped.", sr.getCustomerId());
+            } else {
+                log.info("Sending invoice generated notification to: {}", customerEmail);
+                notificationPublisher.publishInvoiceGenerated(
+                        invoiceNumber,
+                        customerName,
+                        customerEmail,
+                        totalFromPricing);
+            }
         } catch (Exception e) {
-            log.warn("Could not publish invoice generated event: {}", e.getMessage());
+            log.error("Could not publish invoice generated event: {}", e.getMessage(), e);
         }
 
         return mapToResponse(saved);
@@ -134,18 +145,8 @@ public class InvoiceService {
             serviceRequestRepository.save(sr);
             log.info("Service request {} closed after payment", invoice.getServiceRequestId());
         }
-
-        try {
-            notificationPublisher.publishInvoicePaid(
-                    invoice.getInvoiceNumber(),
-                    "Customer",
-                    "manager@vsms.com",
-                    invoice.getTotalAmount(),
-                    dto.getPaymentMethod().name());
-        } catch (Exception e) {
-            log.warn("Could not publish invoice paid event: {}", e.getMessage());
-        }
-
+        // Note: Manager notification removed - invoice status is visible in dashboard
+        // Service request auto-closes after payment which is sufficient
         return mapToResponse(updated);
     }
 
@@ -229,5 +230,45 @@ public class InvoiceService {
         return invoiceRepository.findById(invoiceId)
                 .map(inv -> inv.getCustomerId().equals(customerId))
                 .orElse(false);
+    }
+
+    /**
+     * Get customer email from auth-service
+     */
+    @SuppressWarnings("unchecked")
+    private String getCustomerEmail(Integer customerId) {
+        try {
+            Map<String, Object> response = authServiceClient.getCustomerById(customerId);
+            if (response != null && response.get("data") != null) {
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                return (String) data.get("email");
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch customer email for {}: {}", customerId, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Get customer name from auth-service
+     */
+    @SuppressWarnings("unchecked")
+    private String getCustomerName(Integer customerId) {
+        try {
+            Map<String, Object> response = authServiceClient.getCustomerById(customerId);
+            if (response != null && response.get("data") != null) {
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                String firstName = (String) data.get("firstName");
+                String lastName = (String) data.get("lastName");
+                if (firstName != null && lastName != null) {
+                    return firstName + " " + lastName;
+                } else if (firstName != null) {
+                    return firstName;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch customer name for {}: {}", customerId, e.getMessage());
+        }
+        return "Customer";
     }
 }

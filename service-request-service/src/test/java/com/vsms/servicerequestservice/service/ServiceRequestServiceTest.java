@@ -563,4 +563,321 @@ class ServiceRequestServiceTest {
         assertNotNull(response);
         assertTrue(response.getPickupRequired());
     }
+
+    @Test
+    void reschedule_Success() {
+        testRequest.setStatus(RequestStatus.PENDING);
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+
+        ServiceRequestResponse response = service.reschedule(1, "2026-01-15");
+
+        assertNotNull(response);
+        assertNotNull(testRequest.getPreferredDate());
+    }
+
+    @Test
+    void reschedule_AssignedStatus_Success() {
+        testRequest.setStatus(RequestStatus.ASSIGNED);
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+
+        ServiceRequestResponse response = service.reschedule(1, "2026-01-20");
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void reschedule_WrongStatus_ThrowsException() {
+        testRequest.setStatus(RequestStatus.IN_PROGRESS);
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+
+        assertThrows(BadRequestException.class, () -> service.reschedule(1, "2026-01-15"));
+    }
+
+    @Test
+    void reschedule_CompletedStatus_ThrowsException() {
+        testRequest.setStatus(RequestStatus.COMPLETED);
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+
+        assertThrows(BadRequestException.class, () -> service.reschedule(1, "2026-01-15"));
+    }
+
+    @Test
+    void isOwner_ReturnsTrue_WhenMatch() {
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+
+        boolean result = service.isOwner(1, 1);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void isOwner_ReturnsFalse_WhenNoMatch() {
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+
+        boolean result = service.isOwner(1, 999);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void isOwner_ReturnsFalse_WhenNotFound() {
+        when(repository.findById(999)).thenReturn(Optional.empty());
+
+        boolean result = service.isOwner(999, 1);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void createRequest_WithPreferredDate_Success() {
+        ServiceRequestCreateDTO dto = new ServiceRequestCreateDTO();
+        dto.setCustomerId(1);
+        dto.setVehicleId(1);
+        dto.setServiceType(ServiceType.REGULAR_SERVICE);
+        dto.setPreferredDate("2026-02-15");
+
+        Map<String, Object> vehicleData = Map.of("customerId", 1);
+        Map<String, Object> vehicleResponse = Map.of("data", vehicleData);
+
+        when(vehicleClient.getVehicleById(1)).thenReturn(vehicleResponse);
+        when(repository.save(any(ServiceRequest.class))).thenAnswer(inv -> {
+            ServiceRequest sr = inv.getArgument(0);
+            sr.setId(1);
+            sr.setCreatedAt(LocalDateTime.now());
+            return sr;
+        });
+
+        ServiceRequestResponse response = service.createRequest(dto);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void createRequest_WithNullPickupRequired_DefaultsFalse() {
+        ServiceRequestCreateDTO dto = new ServiceRequestCreateDTO();
+        dto.setCustomerId(1);
+        dto.setVehicleId(1);
+        dto.setServiceType(ServiceType.REGULAR_SERVICE);
+        dto.setPickupRequired(null);
+
+        Map<String, Object> vehicleData = Map.of("customerId", 1);
+        Map<String, Object> vehicleResponse = Map.of("data", vehicleData);
+
+        when(vehicleClient.getVehicleById(1)).thenReturn(vehicleResponse);
+        when(repository.save(any(ServiceRequest.class))).thenAnswer(inv -> {
+            ServiceRequest sr = inv.getArgument(0);
+            sr.setId(1);
+            return sr;
+        });
+
+        ServiceRequestResponse response = service.createRequest(dto);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void setPricing_WithNullCosts_UsesZero() {
+        testRequest.setStatus(RequestStatus.COMPLETED);
+        testRequest.setFinalCost(null);
+        com.vsms.servicerequestservice.dto.request.CompleteWorkDTO dto = new com.vsms.servicerequestservice.dto.request.CompleteWorkDTO();
+        dto.setPartsCost(null);
+        dto.setLaborCost(null);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+
+        ServiceRequestResponse response = service.setPricing(1, dto);
+
+        assertNotNull(response);
+        assertEquals(0f, testRequest.getFinalCost());
+    }
+
+    @Test
+    void setPricing_WithOnlyPartsCost_Success() {
+        testRequest.setStatus(RequestStatus.COMPLETED);
+        testRequest.setFinalCost(null);
+        com.vsms.servicerequestservice.dto.request.CompleteWorkDTO dto = new com.vsms.servicerequestservice.dto.request.CompleteWorkDTO();
+        dto.setPartsCost(200f);
+        dto.setLaborCost(null);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+
+        ServiceRequestResponse response = service.setPricing(1, dto);
+
+        assertNotNull(response);
+        assertEquals(200f, testRequest.getFinalCost());
+    }
+
+    @Test
+    void setPricing_InvoiceGenerationFails_StillCompletes() {
+        testRequest.setStatus(RequestStatus.COMPLETED);
+        testRequest.setFinalCost(null);
+        com.vsms.servicerequestservice.dto.request.CompleteWorkDTO dto = new com.vsms.servicerequestservice.dto.request.CompleteWorkDTO();
+        dto.setPartsCost(200f);
+        dto.setLaborCost(300f);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+        doThrow(new RuntimeException("Invoice error")).when(invoiceService).generateInvoice(1);
+
+        ServiceRequestResponse response = service.setPricing(1, dto);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void setPricing_NotificationFails_StillCompletes() {
+        testRequest.setStatus(RequestStatus.COMPLETED);
+        testRequest.setFinalCost(null);
+        testRequest.setCustomerId(1);
+        testRequest.setVehicleId(1);
+        com.vsms.servicerequestservice.dto.request.CompleteWorkDTO dto = new com.vsms.servicerequestservice.dto.request.CompleteWorkDTO();
+        dto.setPartsCost(100f);
+        dto.setLaborCost(100f);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+        when(authServiceClient.getCustomerById(1)).thenReturn(Map.of("data", Map.of("email", "test@test.com", "firstName", "Test")));
+        doThrow(new RuntimeException("Notification error")).when(notificationPublisher).publishServiceCompleted(anyString(), anyString(), anyString(), anyString(), anyLong());
+
+        ServiceRequestResponse response = service.setPricing(1, dto);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void assignTechnician_WorkloadUpdateFails_StillCompletes() {
+        testRequest.setStatus(RequestStatus.PENDING);
+        AssignTechnicianDTO dto = new AssignTechnicianDTO();
+        dto.setTechnicianId(5);
+        dto.setBayNumber(3);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.findOccupiedBays()).thenReturn(List.of(1, 2));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+        doThrow(new RuntimeException("Auth service down")).when(authServiceClient).updateWorkload(5, "INCREMENT");
+
+        ServiceRequestResponse response = service.assignTechnician(1, dto);
+
+        assertNotNull(response);
+    }
+
+    @Test
+    void updateStatus_ToCompleted_WorkloadUpdateFails_StillCompletes() {
+        testRequest.setStatus(RequestStatus.IN_PROGRESS);
+        testRequest.setTechnicianId(5);
+        StatusUpdateDTO dto = new StatusUpdateDTO();
+        dto.setStatus(RequestStatus.COMPLETED);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+        doThrow(new RuntimeException("Auth service down")).when(authServiceClient).updateWorkload(5, "DECREMENT");
+
+        ServiceRequestResponse response = service.updateStatus(1, dto);
+
+        assertNotNull(response);
+        assertEquals(RequestStatus.COMPLETED, testRequest.getStatus());
+    }
+
+    @Test
+    void cancelRequest_FromAssignedStatus_Success() {
+        testRequest.setStatus(RequestStatus.ASSIGNED);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+
+        ServiceRequestResponse response = service.cancelRequest(1);
+
+        assertNotNull(response);
+        assertEquals(RequestStatus.CANCELLED, testRequest.getStatus());
+    }
+
+    @Test
+    void cancelRequest_FromInProgress_Success() {
+        testRequest.setStatus(RequestStatus.IN_PROGRESS);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+        when(repository.save(any(ServiceRequest.class))).thenReturn(testRequest);
+
+        ServiceRequestResponse response = service.cancelRequest(1);
+
+        assertNotNull(response);
+        assertEquals(RequestStatus.CANCELLED, testRequest.getStatus());
+    }
+
+    @Test
+    void getPartsCostFromInventory_NullResponse_ReturnsZero() {
+        when(inventoryClient.getPartsCostForService(1)).thenReturn(null);
+
+        java.math.BigDecimal cost = service.getPartsCostFromInventory(1);
+
+        assertEquals(java.math.BigDecimal.ZERO, cost);
+    }
+
+    @Test
+    void getPartsCostFromInventory_NullData_ReturnsZero() {
+        // Use HashMap to allow null values since Map.of() doesn't support nulls
+        Map<String, Object> responseWithNullData = new java.util.HashMap<>();
+        responseWithNullData.put("data", null);
+        when(inventoryClient.getPartsCostForService(1)).thenReturn(responseWithNullData);
+
+        java.math.BigDecimal cost = service.getPartsCostFromInventory(1);
+
+        assertEquals(java.math.BigDecimal.ZERO, cost);
+    }
+
+    @Test
+    void assignTechnician_BayNumberZero_ThrowsException() {
+        testRequest.setStatus(RequestStatus.PENDING);
+        AssignTechnicianDTO dto = new AssignTechnicianDTO();
+        dto.setTechnicianId(5);
+        dto.setBayNumber(0);
+
+        when(repository.findById(1)).thenReturn(Optional.of(testRequest));
+
+        assertThrows(BadRequestException.class, () -> service.assignTechnician(1, dto));
+    }
+
+    @Test
+    void getAllBayStatus_NoOccupiedBays_AllAvailable() {
+        when(repository.findOccupiedBays()).thenReturn(List.of());
+
+        var bayStatuses = service.getAllBayStatus();
+
+        assertEquals(20, bayStatuses.size());
+        assertFalse(bayStatuses.get(0).isOccupied());
+        assertFalse(bayStatuses.get(19).isOccupied());
+    }
+
+    @Test
+    void getAllBayStatus_OccupiedBayNoRequest_HandlesGracefully() {
+        when(repository.findOccupiedBays()).thenReturn(List.of(1));
+        when(repository.findByBayNumberAndStatusIn(eq(1), anyList())).thenReturn(Optional.empty());
+
+        var bayStatuses = service.getAllBayStatus();
+
+        assertEquals(20, bayStatuses.size());
+        assertTrue(bayStatuses.get(0).isOccupied());
+        assertNull(bayStatuses.get(0).getServiceRequestId());
+    }
+
+    @Test
+    void createRequest_PickupRequiredWithNullAddress_ThrowsException() {
+        ServiceRequestCreateDTO dto = new ServiceRequestCreateDTO();
+        dto.setCustomerId(1);
+        dto.setVehicleId(1);
+        dto.setServiceType(ServiceType.REGULAR_SERVICE);
+        dto.setPickupRequired(true);
+        dto.setPickupAddress(null);
+
+        Map<String, Object> vehicleData = Map.of("customerId", 1);
+        Map<String, Object> vehicleResponse = Map.of("data", vehicleData);
+
+        when(vehicleClient.getVehicleById(1)).thenReturn(vehicleResponse);
+
+        assertThrows(BadRequestException.class, () -> service.createRequest(dto));
+    }
 }

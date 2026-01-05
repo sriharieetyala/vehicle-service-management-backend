@@ -28,4 +28,6 @@ public class ServiceRequestCreateDTO {
     private Boolean pickupRequired; // true = technician picks up, false = customer drops off
 
     private String pickupAddress; // Required when pickupRequired = true
+
+    private String preferredDate; // Preferred service date (optional)
 }

@@ -5,8 +5,11 @@ pipeline {
         maven 'Maven'
     }
 
-    stages {
+    environment {
+        SONAR_TOKEN = '74593bc7c25686ec55108e653e3873da14e47f9d'
+    }
 
+    stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/sriharieetyala/vehicle-service-management-backend.git'
@@ -16,6 +19,20 @@ pipeline {
         stage('Build & Test') {
             steps {
                 bat 'mvn package'
+            }
+        }
+
+        stage('SonarCloud Analysis') {
+            steps {
+                bat '''
+                    mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar ^
+                    -Dsonar.projectKey=sriharieetyala_vehicle-service-management-backend ^
+                    -Dsonar.organization=sriharieetyala ^
+                    -Dsonar.host.url=https://sonarcloud.io ^
+                    -Dsonar.token=%SONAR_TOKEN% ^
+                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml ^
+                    -Dsonar.exclusions=**/entity/**,**/dto/**,**/enums/**,**/config/**,**/exception/**,**/repository/**,**/security/**,**/client/**,**/*Application.java
+                '''
             }
         }
 
@@ -35,4 +52,3 @@ pipeline {
         }
     }
 }
-

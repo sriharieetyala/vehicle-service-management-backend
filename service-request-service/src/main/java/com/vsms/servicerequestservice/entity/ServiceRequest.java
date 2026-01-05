@@ -66,6 +66,9 @@ public class ServiceRequest {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
+    @Column(name = "preferred_date")
+    private LocalDateTime preferredDate;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

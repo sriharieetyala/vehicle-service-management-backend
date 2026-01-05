@@ -73,6 +73,12 @@ public class ServiceRequestService {
             throw new BadRequestException("Pickup address is required when pickup is requested");
         }
 
+        // Parse preferred date if provided
+        LocalDateTime preferredDate = null;
+        if (dto.getPreferredDate() != null && !dto.getPreferredDate().isBlank()) {
+            preferredDate = LocalDateTime.parse(dto.getPreferredDate() + "T09:00:00");
+        }
+
         ServiceRequest request = ServiceRequest.builder()
                 .customerId(dto.getCustomerId())
                 .vehicleId(dto.getVehicleId())
@@ -81,6 +87,7 @@ public class ServiceRequestService {
                 .priority(dto.getPriority() != null ? dto.getPriority() : Priority.NORMAL)
                 .pickupRequired(pickupRequired)
                 .pickupAddress(dto.getPickupAddress())
+                .preferredDate(preferredDate)
                 .status(RequestStatus.PENDING)
                 .build();
 
@@ -121,6 +128,20 @@ public class ServiceRequestService {
         return repository.findByStatus(RequestStatus.PENDING).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Reschedule a service request - only for PENDING or ASSIGNED status
+     */
+    public ServiceRequestResponse reschedule(Integer id, String newDate) {
+        ServiceRequest request = findById(id);
+        if (request.getStatus() != RequestStatus.PENDING && request.getStatus() != RequestStatus.ASSIGNED) {
+            throw new BadRequestException("Can only reschedule pending or assigned requests");
+        }
+        LocalDateTime preferredDate = LocalDateTime.parse(newDate + "T09:00:00");
+        request.setPreferredDate(preferredDate);
+        log.info("Service request {} rescheduled to {}", id, preferredDate);
+        return mapToResponse(repository.save(request));
     }
 
     @Transactional(readOnly = true)
@@ -245,14 +266,24 @@ public class ServiceRequestService {
 
         // Send service completed notification
         try {
-            notificationPublisher.publishServiceCompleted(
-                    "Customer", // TODO: Get from auth-service
-                    "customer@email.com", // TODO: Get from auth-service
-                    "Vehicle", // TODO: Get from vehicle-service
-                    request.getServiceType().name(),
-                    Long.valueOf(request.getId()));
+            String customerEmail = getCustomerEmail(request.getCustomerId());
+            String customerName = getCustomerName(request.getCustomerId());
+            String vehicleInfo = getVehicleInfo(request.getVehicleId());
+
+            if (customerEmail != null) {
+                log.info("Sending service completed notification to: {}", customerEmail);
+                notificationPublisher.publishServiceCompleted(
+                        customerName,
+                        customerEmail,
+                        vehicleInfo,
+                        request.getServiceType().name(),
+                        Long.valueOf(request.getId()));
+            } else {
+                log.warn("Customer email not found for customerId: {}. Service completed notification skipped.",
+                        request.getCustomerId());
+            }
         } catch (Exception e) {
-            log.warn("Could not send notification for request {}: {}", id, e.getMessage());
+            log.error("Could not send notification for request {}: {}", id, e.getMessage(), e);
         }
 
         return mapToResponse(savedRequest);
@@ -384,6 +415,7 @@ public class ServiceRequestService {
                 .startedAt(request.getStartedAt())
                 .completedAt(request.getCompletedAt())
                 .createdAt(request.getCreatedAt())
+                .preferredDate(request.getPreferredDate())
                 .build();
     }
 
@@ -396,5 +428,67 @@ public class ServiceRequestService {
         return repository.findById(serviceRequestId)
                 .map(sr -> sr.getCustomerId().equals(customerId))
                 .orElse(false);
+    }
+
+    /**
+     * Get customer email from auth-service
+     */
+    @SuppressWarnings("unchecked")
+    private String getCustomerEmail(Integer customerId) {
+        try {
+            Map<String, Object> response = authServiceClient.getCustomerById(customerId);
+            if (response != null && response.get("data") != null) {
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                return (String) data.get("email");
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch customer email for {}: {}", customerId, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Get customer name from auth-service
+     */
+    @SuppressWarnings("unchecked")
+    private String getCustomerName(Integer customerId) {
+        try {
+            Map<String, Object> response = authServiceClient.getCustomerById(customerId);
+            if (response != null && response.get("data") != null) {
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                String firstName = (String) data.get("firstName");
+                String lastName = (String) data.get("lastName");
+                if (firstName != null && lastName != null) {
+                    return firstName + " " + lastName;
+                } else if (firstName != null) {
+                    return firstName;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch customer name for {}: {}", customerId, e.getMessage());
+        }
+        return "Customer";
+    }
+
+    /**
+     * Get vehicle info from vehicle-service
+     */
+    @SuppressWarnings("unchecked")
+    private String getVehicleInfo(Integer vehicleId) {
+        try {
+            Map<String, Object> response = vehicleClient.getVehicleById(vehicleId);
+            if (response != null && response.get("data") != null) {
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                String brand = (String) data.get("brand");
+                String model = (String) data.get("model");
+                String plateNumber = (String) data.get("plateNumber");
+                if (brand != null && model != null) {
+                    return brand + " " + model + (plateNumber != null ? " (" + plateNumber + ")" : "");
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch vehicle info for {}: {}", vehicleId, e.getMessage());
+        }
+        return "Vehicle";
     }
 }

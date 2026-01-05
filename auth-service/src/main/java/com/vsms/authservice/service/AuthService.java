@@ -74,10 +74,14 @@ public class AuthService {
                 throw new UnauthorizedException("Account is deactivated");
             }
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
-                String accessToken = tokenProvider.generateAccessToken(m.getId(), user.getEmail(), "MANAGER");
-                log.info("Manager logged in: {}", email);
+                // Determine role based on department
+                String role = m.getDepartment() == com.vsms.authservice.enums.Department.INVENTORY
+                        ? "INVENTORY_MANAGER"
+                        : "MANAGER";
+                String accessToken = tokenProvider.generateAccessToken(m.getId(), user.getEmail(), role);
+                log.info("{} logged in: {}", role, email);
                 return AuthResponse.of(accessToken, m.getId(), user.getEmail(),
-                        "MANAGER", m.getFirstName(), m.getLastName());
+                        role, m.getFirstName(), m.getLastName());
             }
         }
 

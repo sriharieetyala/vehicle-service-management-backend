@@ -31,10 +31,8 @@ public class PartRequestService {
         // Validate part exists
         Part part = partService.findById(dto.getPartId());
 
-        // Check if sufficient stock is available
-        if (part.getQuantity() < dto.getRequestedQuantity()) {
-            throw new InsufficientStockException(part.getPartNumber(), part.getQuantity(), dto.getRequestedQuantity());
-        }
+        // NOTE: Stock check removed - technician can request any quantity
+        // Inventory manager will approve/reject based on availability
 
         PartRequest request = PartRequest.builder()
                 .partId(dto.getPartId())
@@ -151,5 +149,16 @@ public class PartRequestService {
                     return part.getUnitPrice().multiply(java.math.BigDecimal.valueOf(req.getRequestedQuantity()));
                 })
                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+    }
+
+    // Get all requests by technician
+    @Transactional(readOnly = true)
+    public List<PartRequestResponse> getByTechnicianId(Integer technicianId) {
+        return repository.findByTechnicianId(technicianId).stream()
+                .map(req -> {
+                    Part part = partService.findById(req.getPartId());
+                    return mapToResponse(req, part);
+                })
+                .collect(Collectors.toList());
     }
 }

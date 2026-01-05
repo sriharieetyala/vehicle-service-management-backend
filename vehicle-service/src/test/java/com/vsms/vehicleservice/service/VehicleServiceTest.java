@@ -203,4 +203,61 @@ class VehicleServiceTest {
 
         assertFalse(result);
     }
+
+    @Test
+    void updateVehicle_PartialUpdate_OnlyBrand() {
+        VehicleUpdateRequest request = new VehicleUpdateRequest();
+        request.setBrand("Mazda");
+        // Other fields null
+
+        when(vehicleRepository.findById(1)).thenReturn(Optional.of(testVehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(testVehicle);
+
+        VehicleResponse response = vehicleService.updateVehicle(1, request);
+
+        assertNotNull(response);
+        verify(vehicleRepository, times(1)).save(testVehicle);
+        assertEquals("Mazda", testVehicle.getBrand());
+        // Model unchanged
+        assertEquals("Camry", testVehicle.getModel());
+    }
+
+    @Test
+    void updateVehicle_NotFound_ThrowsException() {
+        VehicleUpdateRequest request = new VehicleUpdateRequest();
+        request.setBrand("Test");
+
+        when(vehicleRepository.findById(999)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> vehicleService.updateVehicle(999, request));
+    }
+
+    @Test
+    void getVehiclesByCustomerId_EmptyList_ReturnsEmpty() {
+        when(vehicleRepository.findByCustomerId(999)).thenReturn(List.of());
+
+        List<VehicleResponse> responses = vehicleService.getVehiclesByCustomerId(999);
+
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+    }
+
+    @Test
+    void updateVehicle_AllFields_UpdatesAll() {
+        VehicleUpdateRequest request = new VehicleUpdateRequest();
+        request.setBrand("BMW");
+        request.setModel("X5");
+        request.setYear(2024);
+        request.setFuelType(FuelType.DIESEL);
+
+        when(vehicleRepository.findById(1)).thenReturn(Optional.of(testVehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(testVehicle);
+
+        vehicleService.updateVehicle(1, request);
+
+        assertEquals("BMW", testVehicle.getBrand());
+        assertEquals("X5", testVehicle.getModel());
+        assertEquals(2024, testVehicle.getYear());
+        assertEquals(FuelType.DIESEL, testVehicle.getFuelType());
+    }
 }

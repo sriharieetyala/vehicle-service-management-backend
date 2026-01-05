@@ -64,4 +64,12 @@ public class PartRequestController {
                 return ResponseEntity.ok(
                                 ApiResponse.success(partRequestService.getTotalCostForService(serviceRequestId)));
         }
+
+        // Get requests by technician (role check done at gateway)
+        @GetMapping("/technician/{technicianId}")
+        public ResponseEntity<ApiResponse<List<PartRequestResponse>>> getByTechnician(
+                        @PathVariable Integer technicianId) {
+                return ResponseEntity.ok(
+                                ApiResponse.success(partRequestService.getByTechnicianId(technicianId)));
+        }
 }

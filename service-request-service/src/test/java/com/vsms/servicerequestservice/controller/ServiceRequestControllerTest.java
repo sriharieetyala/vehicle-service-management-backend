@@ -238,4 +238,63 @@ class ServiceRequestControllerTest {
 
         verify(service, times(1)).getPartsCostFromInventory(1);
     }
+
+    @Test
+    void reschedule_Success() throws Exception {
+        when(service.reschedule(eq(1), eq("2026-01-15"))).thenReturn(testResponse);
+
+        mockMvc.perform(put("/api/service-requests/1/reschedule")
+                .param("date", "2026-01-15"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        verify(service, times(1)).reschedule(1, "2026-01-15");
+    }
+
+    @Test
+    void getByTechnician_WithStatus_Success() throws Exception {
+        when(service.getByTechnicianId(5, RequestStatus.IN_PROGRESS)).thenReturn(List.of(testResponse));
+
+        mockMvc.perform(get("/api/service-requests/technician/5")
+                .param("status", "IN_PROGRESS"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        verify(service, times(1)).getByTechnicianId(5, RequestStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void getAll_WithStatus_Success() throws Exception {
+        when(service.getAll(RequestStatus.PENDING)).thenReturn(List.of(testResponse));
+
+        mockMvc.perform(get("/api/service-requests")
+                .param("status", "PENDING"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        verify(service, times(1)).getAll(RequestStatus.PENDING);
+    }
+
+    @Test
+    void create_WithAllFields_Success() throws Exception {
+        ServiceRequestCreateDTO dto = new ServiceRequestCreateDTO();
+        dto.setCustomerId(1);
+        dto.setVehicleId(1);
+        dto.setServiceType(ServiceType.REPAIR);
+        dto.setDescription("Engine repair");
+        dto.setPriority(Priority.URGENT);
+        dto.setPickupRequired(true);
+        dto.setPickupAddress("123 Main St");
+        dto.setPreferredDate("2026-01-20");
+
+        when(service.createRequest(any())).thenReturn(testResponse);
+
+        mockMvc.perform(post("/api/service-requests")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1));
+
+        verify(service, times(1)).createRequest(any());
+    }
 }

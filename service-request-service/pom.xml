@@ -142,6 +142,7 @@
 				</configuration>
 			</plugin>
 			<!-- JaCoCo for code coverage -->
+			<!-- JaCoCo for code coverage -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -171,6 +172,12 @@
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<formats>
+								<format>XML</format>
+								<format>HTML</format>
+							</formats>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

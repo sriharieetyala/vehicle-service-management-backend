@@ -104,6 +104,15 @@ public class ServiceRequestController {
         return ResponseEntity.ok(ApiResponse.success("Request cancelled", service.cancelRequest(id)));
     }
 
+    // Reschedule request - ownership check: customer can only reschedule their own
+    @PutMapping("/{id}/reschedule")
+    @PreAuthorize("@serviceRequestService.isOwner(#id, authentication.principal.id)")
+    public ResponseEntity<ApiResponse<ServiceRequestResponse>> reschedule(
+            @PathVariable Integer id,
+            @RequestParam String date) {
+        return ResponseEntity.ok(ApiResponse.success("Request rescheduled", service.reschedule(id, date)));
+    }
+
     // Get dashboard stats (role check done at gateway)
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<DashboardStats>> getStats() {

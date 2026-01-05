@@ -15,6 +15,39 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        
+        <!-- SonarCloud Configuration -->
+        <sonar.organization>your-sonarcloud-organization</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.projectKey>your-sonarcloud-project-key</sonar.projectKey>
+        <sonar.projectName>Vehicle Service Management System</sonar.projectName>
+        
+        <!-- Only include the 4 core services for analysis -->
+        <sonar.modules>auth-service,vehicle-service,inventory-service,service-request-service</sonar.modules>
+        
+        <!-- JaCoCo Coverage Report Paths for each module -->
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.basedir}/auth-service/target/site/jacoco/jacoco.xml,
+            ${project.basedir}/vehicle-service/target/site/jacoco/jacoco.xml,
+            ${project.basedir}/inventory-service/target/site/jacoco/jacoco.xml,
+            ${project.basedir}/service-request-service/target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        
+        <!-- Exclusions for SonarCloud analysis (same as JaCoCo) -->
+        <sonar.exclusions>
+            **/entity/**,
+            **/dto/**,
+            **/enums/**,
+            **/config/**,
+            **/exception/**,
+            **/repository/**,
+            **/security/**,
+            **/client/**,
+            **/*Application.java
+        </sonar.exclusions>
+        
+        <!-- Java version for SonarCloud -->
+        <sonar.java.source>${java.version}</sonar.java.source>
     </properties>
 
     <modules>
