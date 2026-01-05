@@ -24,7 +24,7 @@ pipeline {
 
         stage('SonarCloud Analysis') {
             steps {
-                bat 'mvn sonar:sonar -Dsonar.token=%SONAR_TOKEN%'
+                bat 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar -Dsonar.token=%SONAR_TOKEN%'
             }
         }
 
