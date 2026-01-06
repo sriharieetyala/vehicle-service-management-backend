@@ -611,6 +611,47 @@ class InvoiceServiceTest {
         InvoiceResponse response = invoiceService.generateInvoice(1);
 
         assertNotNull(response);
-        verify(notificationPublisher, times(1)).publishInvoiceGenerated(anyString(), eq("Customer"), eq("noname@test.com"), any());
+        verify(notificationPublisher, times(1)).publishInvoiceGenerated(anyString(), eq("Customer"),
+                eq("noname@test.com"), any());
+    }
+
+    // Tests for getCostsByServiceRequestId
+    @Test
+    void getCostsByServiceRequestId_WithInvoice_ReturnsCosts() {
+        testInvoice.setLaborCost(new BigDecimal("100.50"));
+        testInvoice.setPartsCost(new BigDecimal("200.75"));
+        when(invoiceRepository.findByServiceRequestId(1)).thenReturn(Optional.of(testInvoice));
+
+        Float[] costs = invoiceService.getCostsByServiceRequestId(1);
+
+        assertNotNull(costs);
+        assertEquals(2, costs.length);
+        assertEquals(100.50f, costs[0], 0.01);
+        assertEquals(200.75f, costs[1], 0.01);
+    }
+
+    @Test
+    void getCostsByServiceRequestId_NoInvoice_ReturnsNulls() {
+        when(invoiceRepository.findByServiceRequestId(999)).thenReturn(Optional.empty());
+
+        Float[] costs = invoiceService.getCostsByServiceRequestId(999);
+
+        assertNotNull(costs);
+        assertEquals(2, costs.length);
+        assertNull(costs[0]);
+        assertNull(costs[1]);
+    }
+
+    @Test
+    void getCostsByServiceRequestId_NullCosts_ReturnsNulls() {
+        testInvoice.setLaborCost(null);
+        testInvoice.setPartsCost(null);
+        when(invoiceRepository.findByServiceRequestId(1)).thenReturn(Optional.of(testInvoice));
+
+        Float[] costs = invoiceService.getCostsByServiceRequestId(1);
+
+        assertNotNull(costs);
+        assertNull(costs[0]);
+        assertNull(costs[1]);
     }
 }
