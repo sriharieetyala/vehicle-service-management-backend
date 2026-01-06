@@ -24,6 +24,8 @@ public class ServiceRequestResponse {
     private RequestStatus status;
     private Boolean pickupRequired;
     private String pickupAddress;
+    private Float laborCost;
+    private Float partsCost;
     private Float finalCost;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;

@@ -188,6 +188,17 @@ public class InvoiceService {
         return String.format("INV-%d-%04d", Year.now().getValue(), count);
     }
 
+    // Get labor and parts costs for a service request (for ServiceRequestResponse)
+    @Transactional(readOnly = true)
+    public Float[] getCostsByServiceRequestId(Integer serviceRequestId) {
+        return invoiceRepository.findByServiceRequestId(serviceRequestId)
+                .map(inv -> new Float[] {
+                        inv.getLaborCost() != null ? inv.getLaborCost().floatValue() : null,
+                        inv.getPartsCost() != null ? inv.getPartsCost().floatValue() : null
+                })
+                .orElse(new Float[] { null, null });
+    }
+
     private BigDecimal getBigDecimal(Object value) {
         if (value == null)
             return null;

@@ -399,6 +399,12 @@ public class ServiceRequestService {
     }
 
     private ServiceRequestResponse mapToResponse(ServiceRequest request) {
+        // Get labor and parts costs from invoice if exists
+        Float[] costs = invoiceService.getCostsByServiceRequestId(request.getId());
+        if (costs == null) {
+            costs = new Float[] { null, null };
+        }
+
         return ServiceRequestResponse.builder()
                 .id(request.getId())
                 .customerId(request.getCustomerId())
@@ -411,6 +417,8 @@ public class ServiceRequestService {
                 .status(request.getStatus())
                 .pickupRequired(request.getPickupRequired())
                 .pickupAddress(request.getPickupAddress())
+                .laborCost(costs[0])
+                .partsCost(costs[1])
                 .finalCost(request.getFinalCost())
                 .startedAt(request.getStartedAt())
                 .completedAt(request.getCompletedAt())
