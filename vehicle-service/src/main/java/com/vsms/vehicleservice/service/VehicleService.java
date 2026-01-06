@@ -68,7 +68,7 @@ public class VehicleService {
     public List<VehicleResponse> getVehiclesByCustomerId(Integer customerId) {
         return vehicleRepository.findByCustomerId(customerId).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Update vehicle details like brand, model, year

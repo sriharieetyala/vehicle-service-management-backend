@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 // PartRequestService handles part requests from technicians
 // Technicians request parts for jobs and inventory managers approve or reject
@@ -57,7 +56,7 @@ public class PartRequestService {
                     Part part = partService.findById(req.getPartId());
                     return mapToResponse(req, part);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Inventory manager approves the part request
@@ -145,7 +144,7 @@ public class PartRequestService {
         List<PartRequest> approvedRequests = repository.findByServiceRequestId(serviceRequestId)
                 .stream()
                 .filter(req -> req.getStatus() == RequestStatus.APPROVED)
-                .collect(Collectors.toList());
+                .toList();
 
         return approvedRequests.stream()
                 .map(req -> {
@@ -163,6 +162,6 @@ public class PartRequestService {
                     Part part = partService.findById(req.getPartId());
                     return mapToResponse(req, part);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 }

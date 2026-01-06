@@ -54,7 +54,7 @@ public class PartService {
         List<Part> parts = (category != null)
                 ? repository.findByCategory(category)
                 : repository.findAll();
-        return parts.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return parts.stream().map(this::mapToResponse).toList();
     }
 
     // Get a single part by ID
@@ -97,7 +97,7 @@ public class PartService {
     public List<PartResponse> getLowStockParts() {
         return repository.findLowStockParts().stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Called by PartRequestService when a request is approved

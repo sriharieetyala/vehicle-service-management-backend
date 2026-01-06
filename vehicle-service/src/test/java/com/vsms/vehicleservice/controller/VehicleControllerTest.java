@@ -7,8 +7,6 @@ import com.vsms.vehicleservice.dto.response.VehicleResponse;
 import com.vsms.vehicleservice.enums.FuelType;
 import com.vsms.vehicleservice.enums.VehicleType;
 import com.vsms.vehicleservice.exception.GlobalExceptionHandler;
-import com.vsms.vehicleservice.exception.UnauthorizedException;
-import com.vsms.vehicleservice.exception.ResourceNotFoundException;
 import com.vsms.vehicleservice.security.SecurityHelper;
 import com.vsms.vehicleservice.service.VehicleService;
 import org.junit.jupiter.api.BeforeEach;

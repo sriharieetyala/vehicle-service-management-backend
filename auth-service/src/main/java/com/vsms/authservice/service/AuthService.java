@@ -150,6 +150,7 @@ public class AuthService {
                 a.getUser().setPasswordHash(passwordEncoder.encode(newPassword));
                 adminRepository.save(a);
             }
+            default -> throw new UnauthorizedException("Invalid role");
         }
         log.info("Password changed for user: {}", email);
     }

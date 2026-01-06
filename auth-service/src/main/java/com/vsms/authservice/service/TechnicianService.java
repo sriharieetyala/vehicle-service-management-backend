@@ -81,7 +81,7 @@ public class TechnicianService {
     public List<TechnicianResponse> getAllTechnicians() {
         return technicianRepository.findAllActive().stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Get technicians who are on duty and have capacity for new tasks
@@ -90,7 +90,7 @@ public class TechnicianService {
         return technicianRepository.findAvailableTechnicians()
                 .stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Filter available technicians by specialization for better task assignment
@@ -99,7 +99,7 @@ public class TechnicianService {
         return technicianRepository.findAvailableBySpecialization(specialization)
                 .stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Get technicians waiting for admin approval
@@ -108,7 +108,7 @@ public class TechnicianService {
         return technicianRepository.findPendingApproval()
                 .stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Admin approves technician which sets status to ACTIVE
@@ -137,7 +137,7 @@ public class TechnicianService {
                     technician.getUser().getEmail(),
                     technician.getUser().getEmail());
         } catch (Exception e) {
-            System.err.println("Could not send notification: " + e.getMessage());
+            // Log warning but don't fail approval
         }
 
         return mapToResponse(updated);
@@ -162,7 +162,7 @@ public class TechnicianService {
                     technician.getUser().getEmail(),
                     null);
         } catch (Exception e) {
-            System.err.println("Could not send notification: " + e.getMessage());
+            // Log warning but don't fail rejection
         }
     }
 

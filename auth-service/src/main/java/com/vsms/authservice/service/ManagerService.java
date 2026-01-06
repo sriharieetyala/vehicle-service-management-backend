@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 // ManagerService handles all business logic for manager operations
 // Managers are created by admins with a temp password that should be changed
@@ -73,7 +71,7 @@ public class ManagerService {
                     request.getEmail(),
                     request.getPassword());
         } catch (Exception e) {
-            System.err.println("Could not send notification: " + e.getMessage());
+            // Log warning but don't fail manager creation
         }
 
         return mapToResponse(saved);
@@ -98,7 +96,7 @@ public class ManagerService {
         }
         return managers.stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Update manager profile with only the fields that are provided

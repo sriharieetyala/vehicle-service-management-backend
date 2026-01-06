@@ -68,7 +68,7 @@ public class ServiceRequestService {
         }
 
         // Validate pickup address if pickup required
-        Boolean pickupRequired = dto.getPickupRequired() != null ? dto.getPickupRequired() : false;
+        boolean pickupRequired = Boolean.TRUE.equals(dto.getPickupRequired());
         if (pickupRequired && (dto.getPickupAddress() == null || dto.getPickupAddress().isBlank())) {
             throw new BadRequestException("Pickup address is required when pickup is requested");
         }
@@ -105,14 +105,14 @@ public class ServiceRequestService {
     public List<ServiceRequestResponse> getByCustomerId(Integer customerId) {
         return repository.findByCustomerId(customerId).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ServiceRequestResponse> getByVehicleId(Integer vehicleId) {
         return repository.findByVehicleId(vehicleId).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -120,14 +120,14 @@ public class ServiceRequestService {
         List<ServiceRequest> requests = (status != null)
                 ? repository.findByStatus(status)
                 : repository.findAll();
-        return requests.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return requests.stream().map(this::mapToResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<ServiceRequestResponse> getPendingRequests() {
         return repository.findByStatus(RequestStatus.PENDING).stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -149,7 +149,7 @@ public class ServiceRequestService {
         List<ServiceRequest> requests = (status != null)
                 ? repository.findByTechnicianIdAndStatus(technicianId, status)
                 : repository.findByTechnicianId(technicianId);
-        return requests.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return requests.stream().map(this::mapToResponse).toList();
     }
 
     public ServiceRequestResponse assignTechnician(Integer id, AssignTechnicianDTO dto) {

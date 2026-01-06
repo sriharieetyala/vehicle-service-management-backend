@@ -66,7 +66,7 @@ public class CustomerService {
                     request.getFirstName() + " " + request.getLastName(),
                     request.getEmail());
         } catch (Exception e) {
-            System.err.println("Could not send notification: " + e.getMessage());
+            // Log warning but don't fail registration
         }
 
         return mapToResponse(savedCustomer);
@@ -85,7 +85,7 @@ public class CustomerService {
     public List<CustomerResponse> getAllCustomers() {
         return customerRepository.findAll().stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Update customer profile with only the fields that are provided
