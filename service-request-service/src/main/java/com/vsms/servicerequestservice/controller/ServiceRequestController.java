@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// ServiceRequestController handles the entire service request lifecycle
+// From creation by customer to assignment, work completion and invoicing
 @RestController
 @RequestMapping("/api/service-requests")
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class ServiceRequestController {
 
     private final ServiceRequestService service;
 
-    // Create service request (role check done at gateway)
+    // Customer creates a new service request for their vehicle
     @PostMapping
     public ResponseEntity<CreatedResponse> create(
             @Valid @RequestBody ServiceRequestCreateDTO dto) {
@@ -37,13 +39,14 @@ public class ServiceRequestController {
                 HttpStatus.CREATED);
     }
 
-    // Get by ID (role check done at gateway)
+    // Get a single service request by ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success(service.getById(id)));
     }
 
-    // Get by customer ID - ownership check: customer can only see their own
+    // Get all service requests for a customer
+    // Customers can only see their own requests
     @GetMapping("/customer/{customerId}")
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN') or #customerId == authentication.principal.id")
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getByCustomer(
@@ -51,21 +54,21 @@ public class ServiceRequestController {
         return ResponseEntity.ok(ApiResponse.success(service.getByCustomerId(customerId)));
     }
 
-    // Get vehicle service history (role check done at gateway)
+    // Get service history for a specific vehicle
     @GetMapping("/vehicle/{vehicleId}")
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getByVehicle(
             @PathVariable Integer vehicleId) {
         return ResponseEntity.ok(ApiResponse.success(service.getByVehicleId(vehicleId)));
     }
 
-    // Get all (role check done at gateway)
+    // Get all service requests with optional status filter
     @GetMapping
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getAll(
             @RequestParam(required = false) RequestStatus status) {
         return ResponseEntity.ok(ApiResponse.success(service.getAll(status)));
     }
 
-    // Get by technician ID (role check done at gateway)
+    // Get all tasks assigned to a technician
     @GetMapping("/technician/{technicianId}")
     public ResponseEntity<ApiResponse<List<ServiceRequestResponse>>> getByTechnician(
             @PathVariable Integer technicianId,
@@ -73,7 +76,7 @@ public class ServiceRequestController {
         return ResponseEntity.ok(ApiResponse.success(service.getByTechnicianId(technicianId, status)));
     }
 
-    // Assign technician + bay (role check done at gateway)
+    // Manager assigns technician and bay to a service request
     @PutMapping("/{id}/assign")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> assign(
             @PathVariable Integer id,
@@ -81,7 +84,7 @@ public class ServiceRequestController {
         return ResponseEntity.ok(ApiResponse.success("Technician assigned", service.assignTechnician(id, dto)));
     }
 
-    // Update status (role check done at gateway)
+    // Update service request status through the workflow
     @PutMapping("/{id}/status")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> updateStatus(
             @PathVariable Integer id,
@@ -89,7 +92,7 @@ public class ServiceRequestController {
         return ResponseEntity.ok(ApiResponse.success("Status updated", service.updateStatus(id, dto)));
     }
 
-    // Set Pricing (role check done at gateway)
+    // Manager sets labor cost after work is completed
     @PutMapping("/{id}/set-pricing")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> setPricing(
             @PathVariable Integer id,
@@ -97,14 +100,14 @@ public class ServiceRequestController {
         return ResponseEntity.ok(ApiResponse.success("Pricing set", service.setPricing(id, dto)));
     }
 
-    // Cancel request - ownership check: customer can only cancel their own
+    // Customer cancels their own service request
     @PutMapping("/{id}/cancel")
     @PreAuthorize("@serviceRequestService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> cancel(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success("Request cancelled", service.cancelRequest(id)));
     }
 
-    // Reschedule request - ownership check: customer can only reschedule their own
+    // Customer reschedules their service request to a new date
     @PutMapping("/{id}/reschedule")
     @PreAuthorize("@serviceRequestService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<ApiResponse<ServiceRequestResponse>> reschedule(
@@ -113,25 +116,25 @@ public class ServiceRequestController {
         return ResponseEntity.ok(ApiResponse.success("Request rescheduled", service.reschedule(id, date)));
     }
 
-    // Get dashboard stats (role check done at gateway)
+    // Get dashboard statistics for manager overview
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<DashboardStats>> getStats() {
         return ResponseEntity.ok(ApiResponse.success(service.getStats()));
     }
 
-    // Get all bay status (role check done at gateway)
+    // Get status of all service bays
     @GetMapping("/bays")
     public ResponseEntity<ApiResponse<List<BayStatus>>> getAllBays() {
         return ResponseEntity.ok(ApiResponse.success(service.getAllBayStatus()));
     }
 
-    // Get available bays (role check done at gateway)
+    // Get list of available bays for assignment
     @GetMapping("/bays/available")
     public ResponseEntity<ApiResponse<List<Integer>>> getAvailableBays() {
         return ResponseEntity.ok(ApiResponse.success(service.getAvailableBays()));
     }
 
-    // Get parts cost (role check done at gateway)
+    // Get parts cost from inventory service for invoice calculation
     @GetMapping("/{id}/parts-cost")
     public ResponseEntity<ApiResponse<java.math.BigDecimal>> getPartsCost(@PathVariable Integer id) {
         return ResponseEntity

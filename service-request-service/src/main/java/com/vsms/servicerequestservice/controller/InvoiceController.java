@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// InvoiceController handles invoice generation and payment processing
+// Invoices are generated after service completion and paid by customers
 @RestController
 @RequestMapping("/api/invoices")
 @RequiredArgsConstructor
@@ -22,7 +24,8 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
 
-    // Generate invoice (role check done at gateway)
+    // Generate invoice for a completed service request
+    // Returns the invoice number for customer reference
     @PostMapping("/generate/{serviceRequestId}")
     public ResponseEntity<InvoiceCreatedResponse> generateInvoice(
             @PathVariable Integer serviceRequestId) {
@@ -32,13 +35,13 @@ public class InvoiceController {
                 HttpStatus.CREATED);
     }
 
-    // Get all invoices (role check done at gateway)
+    // Get all invoices for admin and manager dashboards
     @GetMapping
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getAllInvoices() {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getAllInvoices()));
     }
 
-    // Get my invoices - ownership check: customer can only see their own
+    // Get invoices for the logged in customer
     @GetMapping("/my")
     @PreAuthorize("#customerId == authentication.principal.id")
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getMyInvoices(
@@ -46,13 +49,13 @@ public class InvoiceController {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getMyInvoices(customerId)));
     }
 
-    // Get unpaid invoices (role check done at gateway)
+    // Get unpaid invoices for follow up
     @GetMapping("/unpaid")
     public ResponseEntity<ApiResponse<List<InvoiceResponse>>> getUnpaidInvoices() {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getUnpaidInvoices()));
     }
 
-    // Pay invoice - ownership check: customer can only pay their own
+    // Customer pays their invoice with payment details
     @PutMapping("/{id}/pay")
     @PreAuthorize("@invoiceService.isOwner(#id, authentication.principal.id)")
     public ResponseEntity<ApiResponse<InvoiceResponse>> payInvoice(
@@ -62,7 +65,7 @@ public class InvoiceController {
                 ApiResponse.success("Payment successful", invoiceService.payInvoice(id, dto)));
     }
 
-    // Get revenue stats (role check done at gateway)
+    // Get revenue statistics for manager dashboard
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<RevenueStats>> getRevenueStats() {
         return ResponseEntity.ok(ApiResponse.success(invoiceService.getRevenueStats()));

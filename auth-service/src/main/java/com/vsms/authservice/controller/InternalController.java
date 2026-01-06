@@ -11,11 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Internal API endpoints for service-to-service communication.
- * These endpoints have NO authentication - only for internal microservice
- * calls.
- */
+// InternalController provides endpoints for service to service communication
+// These have no auth because they are only called by other microservices
 @RestController
 @RequestMapping("/internal")
 @RequiredArgsConstructor
@@ -24,18 +21,14 @@ public class InternalController {
     private final CustomerService customerService;
     private final ManagerService managerService;
 
-    /**
-     * Get customer by ID - no auth required (internal service call)
-     */
+    // Called by service request service to get customer info for notifications
     @GetMapping("/customers/{id}")
     public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable Integer id) {
         CustomerResponse response = customerService.getCustomerById(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    /**
-     * Get all managers - no auth required (internal service call)
-     */
+    // Called by service request service to get manager emails for notifications
     @GetMapping("/managers")
     public ResponseEntity<ApiResponse<List<ManagerResponse>>> getAllManagers() {
         List<ManagerResponse> managers = managerService.getAllManagers(null);

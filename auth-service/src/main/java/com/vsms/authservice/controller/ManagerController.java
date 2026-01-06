@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// ManagerController handles all manager related operations
+// Only admins can create managers as they don't self register
 @RestController
 @RequestMapping("/api/managers")
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class ManagerController {
 
     private final ManagerService managerService;
 
-    // Only Admin can create managers - returns just ID
+    // Admin creates managers with temp password that must be changed on first login
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CreatedResponse> createManager(
@@ -34,7 +36,7 @@ public class ManagerController {
                 HttpStatus.CREATED);
     }
 
-    // Only Admin can view all managers
+    // Get all managers with optional department filter
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<ManagerResponse>>> getAllManagers(
@@ -43,7 +45,7 @@ public class ManagerController {
         return ResponseEntity.ok(ApiResponse.success(managers));
     }
 
-    // Manager can update own profile, Admin can update any
+    // Managers can update their own profile, admins can update any
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ManagerResponse>> updateManager(
@@ -53,7 +55,7 @@ public class ManagerController {
         return ResponseEntity.ok(ApiResponse.success("Manager updated successfully", response));
     }
 
-    // Only Admin can delete managers
+    // Only admins can delete manager accounts
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteManager(@PathVariable Integer id) {

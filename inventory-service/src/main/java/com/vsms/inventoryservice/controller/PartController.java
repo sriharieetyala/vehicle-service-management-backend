@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// PartController handles inventory parts management
+// Inventory managers can add new parts and update stock levels
 @RestController
 @RequestMapping("/api/parts")
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class PartController {
 
     private final PartService partService;
 
-    // Add new part (role check done at gateway)
+    // Add a new part to the inventory catalog
     @PostMapping
     public ResponseEntity<CreatedResponse> createPart(
             @Valid @RequestBody PartCreateDTO dto) {
@@ -32,20 +34,21 @@ public class PartController {
                 HttpStatus.CREATED);
     }
 
-    // Get all parts (role check done at gateway)
+    // Get all parts with optional category filter
     @GetMapping
     public ResponseEntity<ApiResponse<List<PartResponse>>> getAllParts(
             @RequestParam(required = false) PartCategory category) {
         return ResponseEntity.ok(ApiResponse.success(partService.getAllParts(category)));
     }
 
-    // Get low stock parts (role check done at gateway)
+    // Get parts that are below reorder level for restocking
     @GetMapping("/low-stock")
     public ResponseEntity<ApiResponse<List<PartResponse>>> getLowStockParts() {
         return ResponseEntity.ok(ApiResponse.success(partService.getLowStockParts()));
     }
 
-    // Update part (for inventory manager to refill stock)
+    // Update part details like stock quantity and price
+    // Used by inventory manager when restocking parts
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PartResponse>> updatePart(
             @PathVariable Integer id,
@@ -54,7 +57,7 @@ public class PartController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // Get part by ID
+    // Get a single part by ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PartResponse>> getPartById(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success(partService.getPartById(id)));

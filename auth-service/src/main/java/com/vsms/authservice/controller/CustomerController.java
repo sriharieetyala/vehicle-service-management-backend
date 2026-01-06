@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// CustomerController manages all customer related operations
+// I built this to handle registration, profile updates and account management
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
@@ -22,7 +24,8 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    // Public - Customer registration - returns just ID
+    // Customer registration is public so anyone can create an account
+    // I only return the ID since they need to login after registration anyway
     @PostMapping
     public ResponseEntity<CreatedResponse> createCustomer(
             @Valid @RequestBody CustomerCreateRequest request) {
@@ -32,14 +35,14 @@ public class CustomerController {
                 HttpStatus.CREATED);
     }
 
-    // Get all customers (role check done at gateway)
+    // Get all customers for admin dashboard
     @GetMapping
     public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers() {
         List<CustomerResponse> customers = customerService.getAllCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers));
     }
 
-    // Customer can view own, Manager/Admin can view any (ownership check)
+    // Customers can view their own profile, managers and admins can view any
     @PreAuthorize("#id == authentication.principal.id or hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable Integer id) {
@@ -47,7 +50,7 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // Customer can update own profile (ownership check)
+    // Customers can update their own profile, admins can update any
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
@@ -57,7 +60,7 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.success("Customer updated successfully", response));
     }
 
-    // Customer can delete own account, or Admin (ownership check)
+    // I allowed customers to delete their own accounts for GDPR compliance
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Integer id) {

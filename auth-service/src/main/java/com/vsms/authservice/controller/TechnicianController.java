@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// TechnicianController handles technician registration and management
+// This includes the approval workflow where admin reviews new technicians
 @RestController
 @RequestMapping("/api/technicians")
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class TechnicianController {
 
     private final TechnicianService technicianService;
 
-    // Public - Technician registration - returns just ID
+    // Technicians can register but they stay in PENDING status until approved
     @PostMapping
     public ResponseEntity<CreatedResponse> createTechnician(
             @Valid @RequestBody TechnicianCreateRequest request) {
@@ -32,28 +34,28 @@ public class TechnicianController {
                 HttpStatus.CREATED);
     }
 
-    // Get all technicians (role check done at gateway)
+    // Get all technicians for manager to see the team
     @GetMapping
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getAllTechnicians() {
         List<TechnicianResponse> technicians = technicianService.getAllTechnicians();
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Get technician by ID (role check done at gateway)
+    // Get single technician by ID
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TechnicianResponse>> getTechnicianById(@PathVariable Integer id) {
         TechnicianResponse response = technicianService.getTechnicianById(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // Get available technicians (role check done at gateway)
+    // Get technicians who are on duty and have capacity for new tasks
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getAvailableTechnicians() {
         List<TechnicianResponse> technicians = technicianService.getAvailableTechnicians();
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Get by specialization (role check done at gateway)
+    // Filter technicians by their specialization for better task assignment
     @GetMapping("/by-specialization")
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getBySpecialization(
             @RequestParam Specialization spec) {
@@ -61,14 +63,15 @@ public class TechnicianController {
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Get pending technicians (role check done at gateway)
+    // Get technicians waiting for admin approval
     @GetMapping("/pending")
     public ResponseEntity<ApiResponse<List<TechnicianResponse>>> getPendingTechnicians() {
         List<TechnicianResponse> technicians = technicianService.getPendingTechnicians();
         return ResponseEntity.ok(ApiResponse.success(technicians));
     }
 
-    // Review technician (role check done at gateway)
+    // Admin can approve or reject technician applications
+    // I send email notifications for both outcomes
     @PutMapping("/{id}/review")
     public ResponseEntity<ApiResponse<TechnicianResponse>> reviewTechnician(
             @PathVariable Integer id,
@@ -84,7 +87,7 @@ public class TechnicianController {
         }
     }
 
-    // Technician can toggle own duty status (ownership check)
+    // Technicians can toggle their on duty status when starting or ending shift
     @PreAuthorize("#id == authentication.principal.id or hasRole('MANAGER')")
     @PutMapping("/{id}/duty")
     public ResponseEntity<ApiResponse<TechnicianResponse>> toggleDutyStatus(@PathVariable Integer id) {
@@ -92,8 +95,7 @@ public class TechnicianController {
         return ResponseEntity.ok(ApiResponse.success("Duty status toggled", response));
     }
 
-    // Internal - workload updated by service-request-service (no auth - internal
-    // only)
+    // Internal endpoint called by service request service to track workload
     @PutMapping("/{id}/workload")
     public ResponseEntity<ApiResponse<Void>> updateWorkload(
             @PathVariable Integer id,
@@ -109,7 +111,7 @@ public class TechnicianController {
         }
     }
 
-    // Technician can delete own account (ownership check)
+    // Technicians can delete their own account
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTechnician(@PathVariable Integer id) {

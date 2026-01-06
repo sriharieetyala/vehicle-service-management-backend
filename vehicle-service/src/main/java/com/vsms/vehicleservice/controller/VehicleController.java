@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Vehicle Controller with ownership validation.
- * Gateway handles role-based access, this controller handles ownership checks.
- */
+// VehicleController handles all vehicle registration and management
+// Gateway handles role checks, I handle ownership validation here
 @RestController
 @RequestMapping("/api/vehicles")
 @RequiredArgsConstructor
@@ -28,12 +26,11 @@ public class VehicleController {
     private final VehicleService vehicleService;
     private final SecurityHelper securityHelper;
 
-    // Create vehicle - any customer can create (for themselves)
+    // Create a new vehicle for the logged in customer
+    // Customers can only register vehicles for themselves
     @PostMapping
     public ResponseEntity<CreatedResponse> createVehicle(
             @Valid @RequestBody VehicleCreateRequest request) {
-        // Ensure customer can only create vehicles for themselves (unless
-        // manager/admin)
         Integer currentUserId = securityHelper.getCurrentUserId();
         if (currentUserId != null && !securityHelper.isManagerOrAdmin()
                 && !currentUserId.equals(request.getCustomerId())) {
@@ -46,12 +43,12 @@ public class VehicleController {
                 HttpStatus.CREATED);
     }
 
-    // Get vehicle by ID - ownership check
+    // Get vehicle by ID with ownership check
+    // Customers can only see their own vehicles
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<VehicleResponse>> getVehicleById(@PathVariable Integer id) {
         VehicleResponse vehicle = vehicleService.getVehicleById(id);
 
-        // Check ownership (managers/admins can see any)
         Integer currentUserId = securityHelper.getCurrentUserId();
         if (currentUserId != null && !securityHelper.isManagerOrAdmin()
                 && !vehicle.getCustomerId().equals(currentUserId)) {
@@ -61,11 +58,11 @@ public class VehicleController {
         return ResponseEntity.ok(ApiResponse.success(vehicle));
     }
 
-    // Get vehicles by customer - ownership check
+    // Get all vehicles for a customer
+    // Managers can see any customer's vehicles
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<ApiResponse<List<VehicleResponse>>> getVehiclesByCustomerId(
             @PathVariable Integer customerId) {
-        // Check ownership (managers/admins can see any customer's vehicles)
         Integer currentUserId = securityHelper.getCurrentUserId();
         if (currentUserId != null && !securityHelper.isManagerOrAdmin()
                 && !customerId.equals(currentUserId)) {
@@ -76,12 +73,11 @@ public class VehicleController {
         return ResponseEntity.ok(ApiResponse.success(vehicles));
     }
 
-    // Update vehicle - ownership check
+    // Update vehicle details like plate number or model
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<VehicleResponse>> updateVehicle(
             @PathVariable Integer id,
             @Valid @RequestBody VehicleUpdateRequest request) {
-        // Check ownership
         Integer currentUserId = securityHelper.getCurrentUserId();
         if (currentUserId != null && !securityHelper.isManagerOrAdmin()
                 && !vehicleService.isOwner(id, currentUserId)) {
@@ -92,10 +88,9 @@ public class VehicleController {
         return ResponseEntity.ok(ApiResponse.success("Vehicle updated successfully", response));
     }
 
-    // Delete vehicle - ownership check
+    // Delete a vehicle from the system
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable Integer id) {
-        // Check ownership
         Integer currentUserId = securityHelper.getCurrentUserId();
         if (currentUserId != null && !securityHelper.isManagerOrAdmin()
                 && !vehicleService.isOwner(id, currentUserId)) {

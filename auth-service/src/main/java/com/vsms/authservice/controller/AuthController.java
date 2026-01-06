@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+// AuthController handles all authentication related endpoints
+// I created this to manage login, logout and password operations
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -19,13 +21,13 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // 1. Login - Returns access token
+    // Login endpoint where users authenticate and get their JWT token
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    // 2. Get current user info
+    // Returns the current logged in user's info from the JWT token
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Object>> getCurrentUser(
             @AuthenticationPrincipal CustomUserPrincipal principal) {
@@ -35,15 +37,14 @@ public class AuthController {
                 "role", principal.getRole())));
     }
 
-    // 4. Logout (client should discard token)
+    // Logout is stateless so client just removes the token from storage
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
-
-        // Client should remove the token from storage
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
     }
 
-    // 5. Change password
+    // Users can change their password after logging in
+    // I require the current password for security reasons
     @PutMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @AuthenticationPrincipal CustomUserPrincipal principal,

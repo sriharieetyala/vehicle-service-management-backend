@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// PartRequestController handles part requests from technicians
+// Technicians request parts for jobs and inventory managers approve or reject
 @RestController
 @RequestMapping("/api/part-requests")
 @RequiredArgsConstructor
@@ -20,7 +22,7 @@ public class PartRequestController {
 
         private final PartRequestService partRequestService;
 
-        // Request parts for job (role check done at gateway)
+        // Technicians submit requests for parts needed for a job
         @PostMapping
         public ResponseEntity<CreatedResponse> createRequest(
                         @Valid @RequestBody PartRequestCreateDTO dto) {
@@ -30,13 +32,14 @@ public class PartRequestController {
                                 HttpStatus.CREATED);
         }
 
-        // Get pending requests (role check done at gateway)
+        // Get all pending requests for inventory manager to review
         @GetMapping("/pending")
         public ResponseEntity<ApiResponse<List<PartRequestResponse>>> getPendingRequests() {
                 return ResponseEntity.ok(ApiResponse.success(partRequestService.getPendingRequests()));
         }
 
-        // Approve request (role check done at gateway)
+        // Inventory manager approves the part request
+        // This deducts the quantity from stock automatically
         @PutMapping("/{id}/approve")
         public ResponseEntity<ApiResponse<PartRequestResponse>> approveRequest(
                         @PathVariable Integer id,
@@ -46,7 +49,7 @@ public class PartRequestController {
                                                 partRequestService.approveRequest(id, approvedBy)));
         }
 
-        // Reject request (role check done at gateway)
+        // Inventory manager rejects the part request with optional reason
         @PutMapping("/{id}/reject")
         public ResponseEntity<ApiResponse<PartRequestResponse>> rejectRequest(
                         @PathVariable Integer id,
@@ -57,7 +60,7 @@ public class PartRequestController {
                                                 partRequestService.rejectRequest(id, rejectedBy, reason)));
         }
 
-        // Get total parts cost (role check done at gateway)
+        // Get total parts cost for a service request for invoice calculation
         @GetMapping("/service/{serviceRequestId}/total-cost")
         public ResponseEntity<ApiResponse<java.math.BigDecimal>> getTotalCostForService(
                         @PathVariable Integer serviceRequestId) {
@@ -65,7 +68,7 @@ public class PartRequestController {
                                 ApiResponse.success(partRequestService.getTotalCostForService(serviceRequestId)));
         }
 
-        // Get requests by technician (role check done at gateway)
+        // Get all part requests made by a specific technician
         @GetMapping("/technician/{technicianId}")
         public ResponseEntity<ApiResponse<List<PartRequestResponse>>> getByTechnician(
                         @PathVariable Integer technicianId) {
