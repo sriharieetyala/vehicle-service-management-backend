@@ -7,66 +7,72 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
+// NotificationPublisher sends events to RabbitMQ for the notification service
+// Each method publishes a different event type to the appropriate routing key
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationPublisher {
 
-    private final RabbitTemplate rabbitTemplate;
+        private final RabbitTemplate rabbitTemplate;
 
-    public void publishManagerCreated(String name, String email, String username, String temporaryPassword) {
-        ManagerCreatedEvent event = ManagerCreatedEvent.builder()
-                .managerName(name)
-                .email(email)
-                .username(username)
-                .temporaryPassword(temporaryPassword)
-                .build();
+        // Sends manager credentials email when admin creates a new manager
+        public void publishManagerCreated(String name, String email, String username, String temporaryPassword) {
+                ManagerCreatedEvent event = ManagerCreatedEvent.builder()
+                                .managerName(name)
+                                .email(email)
+                                .username(username)
+                                .temporaryPassword(temporaryPassword)
+                                .build();
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.NOTIFICATION_EXCHANGE,
-                RabbitMQConfig.MANAGER_CREATED_KEY,
-                event);
-        log.info("Published MANAGER_CREATED event for: {}", email);
-    }
+                rabbitTemplate.convertAndSend(
+                                RabbitMQConfig.NOTIFICATION_EXCHANGE,
+                                RabbitMQConfig.MANAGER_CREATED_KEY,
+                                event);
+                log.info("Published MANAGER_CREATED event for: {}", email);
+        }
 
-    public void publishTechnicianApproved(String name, String email, String username) {
-        TechnicianApprovedEvent event = TechnicianApprovedEvent.builder()
-                .technicianName(name)
-                .email(email)
-                .username(username)
-                .build();
+        // Sends approval notification when admin approves a technician
+        public void publishTechnicianApproved(String name, String email, String username) {
+                TechnicianApprovedEvent event = TechnicianApprovedEvent.builder()
+                                .technicianName(name)
+                                .email(email)
+                                .username(username)
+                                .build();
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.NOTIFICATION_EXCHANGE,
-                RabbitMQConfig.TECHNICIAN_APPROVED_KEY,
-                event);
-        log.info("Published TECHNICIAN_APPROVED event for: {}", email);
-    }
+                rabbitTemplate.convertAndSend(
+                                RabbitMQConfig.NOTIFICATION_EXCHANGE,
+                                RabbitMQConfig.TECHNICIAN_APPROVED_KEY,
+                                event);
+                log.info("Published TECHNICIAN_APPROVED event for: {}", email);
+        }
 
-    public void publishTechnicianRejected(String name, String email, String reason) {
-        TechnicianRejectedEvent event = TechnicianRejectedEvent.builder()
-                .technicianName(name)
-                .email(email)
-                .reason(reason)
-                .build();
+        // Sends rejection notification when admin rejects a technician
+        public void publishTechnicianRejected(String name, String email, String reason) {
+                TechnicianRejectedEvent event = TechnicianRejectedEvent.builder()
+                                .technicianName(name)
+                                .email(email)
+                                .reason(reason)
+                                .build();
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.NOTIFICATION_EXCHANGE,
-                RabbitMQConfig.TECHNICIAN_REJECTED_KEY,
-                event);
-        log.info("Published TECHNICIAN_REJECTED event for: {}", email);
-    }
+                rabbitTemplate.convertAndSend(
+                                RabbitMQConfig.NOTIFICATION_EXCHANGE,
+                                RabbitMQConfig.TECHNICIAN_REJECTED_KEY,
+                                event);
+                log.info("Published TECHNICIAN_REJECTED event for: {}", email);
+        }
 
-    public void publishCustomerWelcome(String name, String email) {
-        CustomerWelcomeEvent event = CustomerWelcomeEvent.builder()
-                .customerName(name)
-                .email(email)
-                .build();
+        // Sends welcome email when a new customer registers
+        public void publishCustomerWelcome(String name, String email) {
+                CustomerWelcomeEvent event = CustomerWelcomeEvent.builder()
+                                .customerName(name)
+                                .email(email)
+                                .build();
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.NOTIFICATION_EXCHANGE,
-                RabbitMQConfig.CUSTOMER_WELCOME_KEY,
-                event);
-        log.info("Published CUSTOMER_WELCOME event for: {}", email);
-    }
+                rabbitTemplate.convertAndSend(
+                                RabbitMQConfig.NOTIFICATION_EXCHANGE,
+                                RabbitMQConfig.CUSTOMER_WELCOME_KEY,
+                                event);
+                log.info("Published CUSTOMER_WELCOME event for: {}", email);
+        }
 }

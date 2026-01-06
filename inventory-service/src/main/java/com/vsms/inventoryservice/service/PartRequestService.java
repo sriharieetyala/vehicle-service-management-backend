@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// PartRequestService handles part requests from technicians
+// Technicians request parts for jobs and inventory managers approve or reject
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,12 +29,10 @@ public class PartRequestService {
     private final PartRequestRepository repository;
     private final PartService partService;
 
+    // Technicians submit requests for parts needed for a service job
+    // Stock check is not done here, inventory manager will check when approving
     public PartRequestResponse createRequest(PartRequestCreateDTO dto) {
-        // Validate part exists
         Part part = partService.findById(dto.getPartId());
-
-        // NOTE: Stock check removed - technician can request any quantity
-        // Inventory manager will approve/reject based on availability
 
         PartRequest request = PartRequest.builder()
                 .partId(dto.getPartId())
@@ -49,6 +49,7 @@ public class PartRequestService {
         return mapToResponse(saved, part);
     }
 
+    // Get all pending requests for inventory manager to review
     @Transactional(readOnly = true)
     public List<PartRequestResponse> getPendingRequests() {
         return repository.findByStatus(RequestStatus.PENDING).stream()
@@ -59,6 +60,8 @@ public class PartRequestService {
                 .collect(Collectors.toList());
     }
 
+    // Inventory manager approves the part request
+    // This checks stock availability and deducts the quantity
     public PartRequestResponse approveRequest(Integer id, Integer approvedBy) {
         PartRequest request = findById(id);
 
@@ -68,16 +71,15 @@ public class PartRequestService {
 
         Part part = partService.findById(request.getPartId());
 
-        // Check stock availability
+        // Check if we have enough stock to fulfill the request
         if (part.getQuantity() < request.getRequestedQuantity()) {
             throw new InsufficientStockException(part.getPartNumber(), part.getQuantity(),
                     request.getRequestedQuantity());
         }
 
-        // Reduce stock
+        // Reduce the stock by the requested amount
         partService.reduceStock(request.getPartId(), request.getRequestedQuantity());
 
-        // Update request status
         request.setStatus(RequestStatus.APPROVED);
         request.setProcessedAt(LocalDateTime.now());
         request.setProcessedBy(approvedBy);
@@ -85,11 +87,11 @@ public class PartRequestService {
         PartRequest updated = repository.save(request);
         log.info("Part request {} approved. Stock reduced by {}", id, request.getRequestedQuantity());
 
-        // Fetch updated part for response
         Part updatedPart = partService.findById(request.getPartId());
         return mapToResponse(updated, updatedPart);
     }
 
+    // Inventory manager rejects the part request with optional reason
     public PartRequestResponse rejectRequest(Integer id, Integer rejectedBy, String reason) {
         PartRequest request = findById(id);
 
@@ -113,11 +115,13 @@ public class PartRequestService {
         return mapToResponse(updated, part);
     }
 
+    // Helper method to find request by ID or throw exception
     private PartRequest findById(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("PartRequest", "id", id));
     }
 
+    // Maps PartRequest entity to response DTO
     private PartRequestResponse mapToResponse(PartRequest request, Part part) {
         return PartRequestResponse.builder()
                 .id(request.getId())
@@ -135,7 +139,7 @@ public class PartRequestService {
                 .build();
     }
 
-    // Get total parts cost for a service request (for billing)
+    // Calculate total parts cost for a service request for invoice
     @Transactional(readOnly = true)
     public java.math.BigDecimal getTotalCostForService(Integer serviceRequestId) {
         List<PartRequest> approvedRequests = repository.findByServiceRequestId(serviceRequestId)
@@ -151,7 +155,7 @@ public class PartRequestService {
                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
     }
 
-    // Get all requests by technician
+    // Get all part requests made by a specific technician
     @Transactional(readOnly = true)
     public List<PartRequestResponse> getByTechnicianId(Integer technicianId) {
         return repository.findByTechnicianId(technicianId).stream()

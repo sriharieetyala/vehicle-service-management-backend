@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+// AuthService handles authentication logic and JWT token generation
+// I check all user types since they are stored in separate tables
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,11 +31,13 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
 
+    // Login method that checks all user types and returns JWT token
+    // I had to check each table separately because we have separate tables per role
     public AuthResponse login(LoginRequest request) {
         String email = request.getEmail().toLowerCase();
         String password = request.getPassword();
 
-        // Check Customer
+        // Check if it's a customer trying to login
         Optional<Customer> customer = customerRepository.findByUserEmail(email);
         if (customer.isPresent()) {
             Customer c = customer.get();
@@ -49,7 +53,7 @@ public class AuthService {
             }
         }
 
-        // Check Technician
+        // Check if it's a technician trying to login
         Optional<Technician> technician = technicianRepository.findByUserEmail(email);
         if (technician.isPresent()) {
             Technician t = technician.get();
@@ -65,7 +69,7 @@ public class AuthService {
             }
         }
 
-        // Check Manager
+        // Check if it's a manager (either SERVICE_BAY or INVENTORY department)
         Optional<Manager> manager = managerRepository.findByUserEmail(email);
         if (manager.isPresent()) {
             Manager m = manager.get();
@@ -74,7 +78,7 @@ public class AuthService {
                 throw new UnauthorizedException("Account is deactivated");
             }
             if (passwordEncoder.matches(password, user.getPasswordHash())) {
-                // Determine role based on department
+                // I assign role based on department so inventory managers get their own role
                 String role = m.getDepartment() == com.vsms.authservice.enums.Department.INVENTORY
                         ? "INVENTORY_MANAGER"
                         : "MANAGER";
@@ -85,7 +89,7 @@ public class AuthService {
             }
         }
 
-        // Check Admin
+        // Finally check if it's an admin
         Optional<Admin> admin = adminRepository.findByUserEmail(email);
         if (admin.isPresent()) {
             Admin a = admin.get();
@@ -101,6 +105,8 @@ public class AuthService {
         throw new UnauthorizedException("Invalid email or password");
     }
 
+    // Change password requires current password for security
+    // I use a switch to handle each user type separately
     public void changePassword(CustomUserPrincipal principal, ChangePasswordRequest request) {
         String email = principal.getEmail();
         String role = principal.getRole();

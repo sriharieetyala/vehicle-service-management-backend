@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// VehicleService handles all business logic for vehicle operations
+// I call auth service via Feign to validate customer exists before creating vehicle
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -25,17 +27,15 @@ public class VehicleService {
     private final VehicleRepository vehicleRepository;
     private final AuthServiceClient authServiceClient;
 
-    /**
-     * Register a new vehicle for a customer
-     */
+    // Register a new vehicle for a customer
+    // I validate the customer exists in auth service first via Feign
     public VehicleResponse createVehicle(VehicleCreateRequest request) {
-        // Validate customer exists in auth-service (circuit breaker will throw 503 if
-        // down)
         var customerResponse = authServiceClient.getCustomerById(request.getCustomerId());
         if (customerResponse == null) {
             throw new ResourceNotFoundException("Customer", "id", request.getCustomerId());
         }
 
+        // Check for duplicate plate number
         if (vehicleRepository.existsByPlateNumber(request.getPlateNumber())) {
             throw new DuplicateResourceException("Vehicle", "plateNumber", request.getPlateNumber());
         }
@@ -55,9 +55,7 @@ public class VehicleService {
         return mapToResponse(saved);
     }
 
-    /**
-     * Get vehicle by ID
-     */
+    // Get a single vehicle by ID
     @Transactional(readOnly = true)
     public VehicleResponse getVehicleById(Integer id) {
         Vehicle vehicle = vehicleRepository.findById(id)
@@ -65,9 +63,7 @@ public class VehicleService {
         return mapToResponse(vehicle);
     }
 
-    /**
-     * Get all vehicles for a customer
-     */
+    // Get all vehicles for a specific customer
     @Transactional(readOnly = true)
     public List<VehicleResponse> getVehiclesByCustomerId(Integer customerId) {
         return vehicleRepository.findByCustomerId(customerId).stream()
@@ -75,10 +71,8 @@ public class VehicleService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Update vehicle details (brand, model, year, fuelType - NOT customerId or
-     * plateNumber)
-     */
+    // Update vehicle details like brand, model, year
+    // I don't allow changing plate number or customer ID
     public VehicleResponse updateVehicle(Integer id, VehicleUpdateRequest request) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", id));
@@ -103,9 +97,7 @@ public class VehicleService {
         return mapToResponse(updated);
     }
 
-    /**
-     * Delete vehicle
-     */
+    // Delete a vehicle from the system
     public void deleteVehicle(Integer id) {
         if (!vehicleRepository.existsById(id)) {
             throw new ResourceNotFoundException("Vehicle", "id", id);
@@ -113,17 +105,13 @@ public class VehicleService {
         vehicleRepository.deleteById(id);
     }
 
-    /**
-     * Get total vehicle count
-     */
+    // Get total vehicle count for dashboard stats
     @Transactional(readOnly = true)
     public long getVehicleCount() {
         return vehicleRepository.count();
     }
 
-    /**
-     * Check if a customer owns a vehicle (for @PreAuthorize ownership checks)
-     */
+    // Check if a customer owns a specific vehicle for ownership validation
     @Transactional(readOnly = true)
     public boolean isOwner(Integer vehicleId, Integer customerId) {
         return vehicleRepository.findById(vehicleId)
@@ -131,9 +119,7 @@ public class VehicleService {
                 .orElse(false);
     }
 
-    /**
-     * Map entity to response DTO
-     */
+    // Maps Vehicle entity to response DTO
     private VehicleResponse mapToResponse(Vehicle vehicle) {
         return VehicleResponse.builder()
                 .id(vehicle.getId())

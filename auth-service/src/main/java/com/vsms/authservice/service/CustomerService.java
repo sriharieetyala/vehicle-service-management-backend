@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// CustomerService handles all business logic for customer operations
+// I keep the AppUser and Customer creation together in a transaction
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,16 +30,15 @@ public class CustomerService {
     private final NotificationPublisher notificationPublisher;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    /**
-     * Create a new customer
-     */
+    // Creates a new customer account with ACTIVE status
+    // I also send a welcome email after successful registration
     public CustomerResponse createCustomer(CustomerCreateRequest request) {
-        // Check if email already exists
+        // Check if email already exists to prevent duplicates
         if (appUserRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("User", "email", request.getEmail());
         }
 
-        // Create AppUser first
+        // Create the base AppUser first
         AppUser appUser = AppUser.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
@@ -46,7 +47,7 @@ public class CustomerService {
                 .status(UserStatus.ACTIVE)
                 .build();
 
-        // Create Customer
+        // Then create the Customer profile linked to AppUser
         Customer customer = Customer.builder()
                 .user(appUser)
                 .firstName(request.getFirstName())
@@ -59,7 +60,7 @@ public class CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        // Send welcome email
+        // Send welcome email but don't fail registration if email fails
         try {
             notificationPublisher.publishCustomerWelcome(
                     request.getFirstName() + " " + request.getLastName(),
@@ -71,9 +72,7 @@ public class CustomerService {
         return mapToResponse(savedCustomer);
     }
 
-    /**
-     * Get customer by ID
-     */
+    // Get a single customer by their ID
     @Transactional(readOnly = true)
     public CustomerResponse getCustomerById(Integer id) {
         Customer customer = customerRepository.findById(id)
@@ -81,9 +80,7 @@ public class CustomerService {
         return mapToResponse(customer);
     }
 
-    /**
-     * Get all customers
-     */
+    // Get all customers for admin dashboard
     @Transactional(readOnly = true)
     public List<CustomerResponse> getAllCustomers() {
         return customerRepository.findAll().stream()
@@ -91,14 +88,13 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Update customer profile
-     */
+    // Update customer profile with only the fields that are provided
+    // I check each field for null so partial updates work properly
     public CustomerResponse updateCustomer(Integer id, CustomerUpdateRequest request) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
 
-        // Update fields if provided
+        // Only update fields that are provided in the request
         if (request.getPhone() != null) {
             customer.getUser().setPhone(request.getPhone());
         }
@@ -125,9 +121,7 @@ public class CustomerService {
         return mapToResponse(updatedCustomer);
     }
 
-    /**
-     * Deactivate customer account
-     */
+    // Soft delete by setting status to INACTIVE instead of hard delete
     public void deleteCustomer(Integer id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
@@ -135,17 +129,13 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
-    /**
-     * Get customer count for dashboard
-     */
+    // Get count for admin dashboard stats
     @Transactional(readOnly = true)
     public long getCustomerCount() {
         return customerRepository.count();
     }
 
-    /**
-     * Map entity to response DTO
-     */
+    // Maps Customer entity to response DTO
     private CustomerResponse mapToResponse(Customer customer) {
         return CustomerResponse.builder()
                 .id(customer.getId())

@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// PartService handles inventory parts management
+// Inventory managers use this to add new parts and update stock levels
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,7 +26,9 @@ public class PartService {
 
     private final PartRepository repository;
 
+    // Add a new part to the inventory catalog
     public PartResponse createPart(PartCreateDTO dto) {
+        // Check for duplicate part numbers
         if (repository.existsByPartNumber(dto.getPartNumber())) {
             throw new BadRequestException("Part with number '" + dto.getPartNumber() + "' already exists");
         }
@@ -44,6 +48,7 @@ public class PartService {
         return mapToResponse(saved);
     }
 
+    // Get all parts with optional category filter
     @Transactional(readOnly = true)
     public List<PartResponse> getAllParts(PartCategory category) {
         List<Part> parts = (category != null)
@@ -52,11 +57,14 @@ public class PartService {
         return parts.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
+    // Get a single part by ID
     @Transactional(readOnly = true)
     public PartResponse getPartById(Integer id) {
         return mapToResponse(findById(id));
     }
 
+    // Update part details like stock quantity and price
+    // Only updates fields that are provided in the request
     public PartResponse updatePart(Integer id, PartUpdateDTO dto) {
         Part part = findById(id);
 
@@ -84,6 +92,7 @@ public class PartService {
         return mapToResponse(updated);
     }
 
+    // Get parts that are below reorder level for restocking alerts
     @Transactional(readOnly = true)
     public List<PartResponse> getLowStockParts() {
         return repository.findLowStockParts().stream()
@@ -91,7 +100,8 @@ public class PartService {
                 .collect(Collectors.toList());
     }
 
-    // Internal method for PartRequestService to reduce stock
+    // Called by PartRequestService when a request is approved
+    // Reduces the stock by the requested quantity
     public void reduceStock(Integer partId, int quantity) {
         Part part = findById(partId);
         int newQuantity = part.getQuantity() - quantity;
@@ -104,11 +114,13 @@ public class PartService {
                 newQuantity);
     }
 
+    // Helper method to find part by ID or throw exception
     Part findById(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Part", "id", id));
     }
 
+    // Maps Part entity to response DTO
     private PartResponse mapToResponse(Part part) {
         return PartResponse.builder()
                 .id(part.getId())

@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// TechnicianService handles all business logic for technician operations
+// This includes the approval workflow where admins review new technicians
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,29 +31,29 @@ public class TechnicianService {
     private final NotificationPublisher notificationPublisher;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    /**
-     * Register a new technician (status = PENDING until admin approves)
-     */
+    // Creates a new technician with PENDING status until admin approves
     public TechnicianResponse createTechnician(TechnicianCreateRequest request) {
         if (appUserRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("User", "email", request.getEmail());
         }
 
+        // New technicians start with PENDING status
         AppUser appUser = AppUser.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(Role.TECHNICIAN)
-                .status(UserStatus.PENDING) // Requires admin approval
+                .status(UserStatus.PENDING)
                 .build();
 
+        // Default values for new technicians
         Technician technician = Technician.builder()
                 .user(appUser)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .specialization(request.getSpecialization())
                 .experienceYears(request.getExperienceYears() != null ? request.getExperienceYears() : 0)
-                .onDuty(false) // Default off duty until approved
+                .onDuty(false)
                 .currentWorkload(0)
                 .maxCapacity(5)
                 .build();
@@ -60,15 +62,13 @@ public class TechnicianService {
         return mapToResponse(saved);
     }
 
-    /**
-     * Get technician by ID (only if ACTIVE or PENDING, not if rejected/INACTIVE)
-     */
+    // Get technician by ID but hide rejected ones
     @Transactional(readOnly = true)
     public TechnicianResponse getTechnicianById(Integer id) {
         Technician technician = technicianRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
 
-        // Don't expose rejected (INACTIVE) technicians
+        // Rejected technicians should not be visible
         if (technician.getUser().getStatus() == UserStatus.INACTIVE) {
             throw new ResourceNotFoundException("Technician", "id", id);
         }
@@ -76,9 +76,7 @@ public class TechnicianService {
         return mapToResponse(technician);
     }
 
-    /**
-     * Get all APPROVED technicians (ACTIVE status only)
-     */
+    // Get all approved technicians for the manager dashboard
     @Transactional(readOnly = true)
     public List<TechnicianResponse> getAllTechnicians() {
         return technicianRepository.findAllActive().stream()
@@ -86,9 +84,7 @@ public class TechnicianService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get available technicians (on duty + has capacity)
-     */
+    // Get technicians who are on duty and have capacity for new tasks
     @Transactional(readOnly = true)
     public List<TechnicianResponse> getAvailableTechnicians() {
         return technicianRepository.findAvailableTechnicians()
@@ -97,9 +93,7 @@ public class TechnicianService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get available technicians by specialization (for assignment)
-     */
+    // Filter available technicians by specialization for better task assignment
     @Transactional(readOnly = true)
     public List<TechnicianResponse> getAvailableBySpecialization(Specialization specialization) {
         return technicianRepository.findAvailableBySpecialization(specialization)
@@ -108,9 +102,7 @@ public class TechnicianService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get technicians pending approval
-     */
+    // Get technicians waiting for admin approval
     @Transactional(readOnly = true)
     public List<TechnicianResponse> getPendingTechnicians() {
         return technicianRepository.findPendingApproval()
@@ -119,9 +111,8 @@ public class TechnicianService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Admin approves technician registration
-     */
+    // Admin approves technician which sets status to ACTIVE
+    // I also generate an employee ID and send approval email
     public TechnicianResponse approveTechnician(Integer id) {
         Technician technician = technicianRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
@@ -133,13 +124,13 @@ public class TechnicianService {
         technician.getUser().setStatus(UserStatus.ACTIVE);
         technician.setOnDuty(true);
 
-        // Generate employee ID
+        // Generate employee ID in format TECH-00001
         String employeeId = "TECH-" + String.format("%05d", technician.getId());
         technician.setEmployeeId(employeeId);
 
         Technician updated = technicianRepository.save(technician);
 
-        // Send approval email
+        // Send approval email notification
         try {
             notificationPublisher.publishTechnicianApproved(
                     technician.getFirstName() + " " + technician.getLastName(),
@@ -152,9 +143,7 @@ public class TechnicianService {
         return mapToResponse(updated);
     }
 
-    /**
-     * Admin rejects technician registration
-     */
+    // Admin rejects technician which sets status to INACTIVE
     public void rejectTechnician(Integer id) {
         Technician technician = technicianRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
@@ -166,7 +155,7 @@ public class TechnicianService {
         technician.getUser().setStatus(UserStatus.INACTIVE);
         technicianRepository.save(technician);
 
-        // Send rejection email
+        // Send rejection email notification
         try {
             notificationPublisher.publishTechnicianRejected(
                     technician.getFirstName() + " " + technician.getLastName(),
@@ -177,9 +166,7 @@ public class TechnicianService {
         }
     }
 
-    /**
-     * Toggle technician duty status
-     */
+    // Technicians can toggle their duty status when starting or ending shift
     public TechnicianResponse toggleDutyStatus(Integer id) {
         Technician technician = technicianRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
@@ -189,9 +176,7 @@ public class TechnicianService {
         return mapToResponse(updated);
     }
 
-    /**
-     * Increment workload (when assigned a task)
-     */
+    // Called when a task is assigned to the technician
     public void incrementWorkload(Integer id) {
         Technician technician = technicianRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
@@ -203,32 +188,24 @@ public class TechnicianService {
         technicianRepository.incrementWorkload(id);
     }
 
-    /**
-     * Decrement workload (when task completed)
-     */
+    // Called when a task is completed by the technician
     public void decrementWorkload(Integer id) {
         technicianRepository.decrementWorkload(id);
     }
 
-    /**
-     * Get technician count (only ACTIVE technicians)
-     */
+    // Get active technician count for dashboard stats
     @Transactional(readOnly = true)
     public long getTechnicianCount() {
         return technicianRepository.countActive();
     }
 
-    /**
-     * Get pending count for admin dashboard
-     */
+    // Get pending approval count for admin dashboard
     @Transactional(readOnly = true)
     public long getPendingCount() {
         return technicianRepository.countPending();
     }
 
-    /**
-     * Deactivate technician
-     */
+    // Soft delete by setting status to INACTIVE
     public void deleteTechnician(Integer id) {
         Technician technician = technicianRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician", "id", id));
@@ -237,9 +214,7 @@ public class TechnicianService {
         technicianRepository.save(technician);
     }
 
-    /**
-     * Map entity to response DTO
-     */
+    // Maps Technician entity to response DTO
     private TechnicianResponse mapToResponse(Technician technician) {
         return TechnicianResponse.builder()
                 .id(technician.getId())

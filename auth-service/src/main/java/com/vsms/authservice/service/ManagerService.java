@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+// ManagerService handles all business logic for manager operations
+// Managers are created by admins with a temp password that should be changed
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -30,9 +32,8 @@ public class ManagerService {
     private final NotificationPublisher notificationPublisher;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    /**
-     * Admin creates a new manager (password provided by admin)
-     */
+    // Admin creates a manager with a password and sends credentials via email
+    // Role is set based on department: INVENTORY gets INVENTORY_MANAGER role
     public ManagerResponse createManager(ManagerCreateRequest request) {
         if (appUserRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("User", "email", request.getEmail());
@@ -64,7 +65,7 @@ public class ManagerService {
 
         Manager saved = managerRepository.save(manager);
 
-        // Send email with credentials
+        // Send email with login credentials
         try {
             notificationPublisher.publishManagerCreated(
                     request.getFirstName() + " " + request.getLastName(),
@@ -78,9 +79,7 @@ public class ManagerService {
         return mapToResponse(saved);
     }
 
-    /**
-     * Get manager by ID
-     */
+    // Get a single manager by ID
     @Transactional(readOnly = true)
     public ManagerResponse getManagerById(Integer id) {
         Manager manager = managerRepository.findById(id)
@@ -88,9 +87,7 @@ public class ManagerService {
         return mapToResponse(manager);
     }
 
-    /**
-     * Get all managers (optional filter by department)
-     */
+    // Get all managers with optional department filter
     @Transactional(readOnly = true)
     public List<ManagerResponse> getAllManagers(Department department) {
         List<Manager> managers;
@@ -104,9 +101,8 @@ public class ManagerService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Update manager profile
-     */
+    // Update manager profile with only the fields that are provided
+    // If department changes I also update the role accordingly
     public ManagerResponse updateManager(Integer id, ManagerUpdateRequest request) {
         Manager manager = managerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Manager", "id", id));
@@ -122,7 +118,7 @@ public class ManagerService {
         }
         if (request.getDepartment() != null) {
             manager.setDepartment(request.getDepartment());
-            // Update role if department changed
+            // Update role when department changes
             Role role = (request.getDepartment() == Department.INVENTORY)
                     ? Role.INVENTORY_MANAGER
                     : Role.MANAGER;
@@ -133,9 +129,7 @@ public class ManagerService {
         return mapToResponse(updated);
     }
 
-    /**
-     * Deactivate manager
-     */
+    // Soft delete by setting status to INACTIVE
     public void deleteManager(Integer id) {
         Manager manager = managerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Manager", "id", id));
@@ -143,9 +137,7 @@ public class ManagerService {
         managerRepository.save(manager);
     }
 
-    /**
-     * Get count (optional by department)
-     */
+    // Get manager count with optional department filter
     @Transactional(readOnly = true)
     public long getManagerCount(Department department) {
         if (department != null) {
@@ -154,9 +146,7 @@ public class ManagerService {
         return managerRepository.count();
     }
 
-    /**
-     * Map entity to response DTO
-     */
+    // Maps Manager entity to response DTO
     private ManagerResponse mapToResponse(Manager manager) {
         return ManagerResponse.builder()
                 .id(manager.getId())
